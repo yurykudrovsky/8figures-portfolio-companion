@@ -40,7 +40,14 @@ Use this checklist before marking any feature complete and creating its commit. 
 - [ ] No business logic added to components — all new calculations live in services
 - [ ] Every new subscription uses `takeUntilDestroyed`
 
-## 7. Commit Readiness
+## 7. Unit Tests
+- [ ] Run `npx ng test --watch=false` from `frontend/` — all tests must pass
+- [ ] Any new service has a corresponding `.spec.ts` covering happy path, error path, and platform variants
+- [ ] No `any` types in test files — fixture objects must match their interfaces exactly
+- [ ] Streaming observables tested with `vi.useFakeTimers()` + `vi.runAllTimers()`
+- [ ] `httpMock.verify()` called in `afterEach` — no unexpected HTTP requests left open
+
+## 8. Commit Readiness
 - [ ] All changes are scoped to the feature being committed (no unrelated edits staged)
 - [ ] Commit message follows conventional format: `feat: <description>` / `fix: <description>`
 - [ ] Commit is atomic — one logical change, not a dump of everything since last commit
