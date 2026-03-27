@@ -1,16 +1,4 @@
 #!/usr/bin/env bash
-# scripts/run-agent.sh — Launch a named agent with its context file
-#
-# Usage:
-#   ./scripts/run-agent.sh <agent> "<task description>"
-#
-# Examples:
-#   ./scripts/run-agent.sh scout "audit API routes for type safety"
-#   ./scripts/run-agent.sh architect "design new allocation chart feature"
-#   ./scripts/run-agent.sh builder "implement allocation chart per design-docs/2026-03-27-allocation-chart.md"
-#   ./scripts/run-agent.sh reviewer "review allocation chart implementation"
-#   ./scripts/run-agent.sh qa "test allocation chart service"
-
 set -euo pipefail
 
 AGENT="${1:-}"
@@ -19,49 +7,49 @@ REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 CONTEXT_DIR="${REPO_ROOT}/.claude/agents"
 LOG_DIR="${REPO_ROOT}/logs/agent-sessions"
 
-# ── Validate inputs ────────────────────────────────────────────────────────────
+# Branch safety check
+# NOTE: Temporary manual enforcement. Future evolution:
+# orchestrator creates branches automatically per
+# tasks/README.md "Future Integration Roadmap"
+CURRENT_BRANCH=$(git -C "${REPO_ROOT}" branch --show-current)
+if [ "$CURRENT_BRANCH" = "main" ]; then
+  echo "ERROR: Cannot run pipeline on main branch"
+  echo "Create pipeline branch: git checkout -b pipeline/NNN-description"
+  echo "See ARCHITECTURE.md Pipeline Evolution for future automation"
+  exit 1
+fi
 
 if [[ -z "$AGENT" ]]; then
-  echo "ERROR: Agent name required." >&2
-  echo "Usage: $0 <agent> \"<task description>\"" >&2
-  echo "Agents: scout | architect | builder | reviewer | qa" >&2
+  echo "ERROR: Agent name required."
+  echo "Agents: scout | architect | builder | reviewer | qa"
   exit 1
 fi
 
 if [[ -z "$TASK" ]]; then
-  echo "ERROR: Task description required." >&2
-  echo "Usage: $0 <agent> \"<task description>\"" >&2
+  echo "ERROR: Task description required."
   exit 1
 fi
 
 CONTEXT_FILE="${CONTEXT_DIR}/${AGENT}.md"
 
 if [[ ! -f "$CONTEXT_FILE" ]]; then
-  echo "ERROR: No context file found for agent '${AGENT}'." >&2
-  echo "Expected: ${CONTEXT_FILE}" >&2
-  echo "Available agents:" >&2
-  ls "${CONTEXT_DIR}"/*.md 2>/dev/null | xargs -I{} basename {} .md >&2 || true
+  echo "ERROR: No context file for agent '${AGENT}'"
   exit 1
 fi
 
-# ── Prepare session log ────────────────────────────────────────────────────────
-
 mkdir -p "${LOG_DIR}"
 TIMESTAMP="$(date +%Y-%m-%dT%H-%M-%S)"
-SESSION_ID="${TIMESTAMP}-${AGENT}"
-LOG_FILE="${LOG_DIR}/${SESSION_ID}.md"
+AGENT_UPPER="$(echo "$AGENT" | tr '[:lower:]' '[:upper:]')"
+LOG_FILE="${LOG_DIR}/${TIMESTAMP}-${AGENT}.md"
 
-cat > "${LOG_FILE}" <<EOF
-# Agent Session — ${AGENT^^} — ${TIMESTAMP}
+cat > "${LOG_FILE}" << EOF
+# Agent Session — ${AGENT_UPPER} — ${TIMESTAMP}
 
 ## Agent
 ${AGENT}
 
 ## Task
 ${TASK}
-
-## Context file
-${CONTEXT_FILE}
 
 ## Started
 $(date -u +"%Y-%m-%dT%H:%M:%SZ")
@@ -73,22 +61,14 @@ running
 
 EOF
 
-echo "──────────────────────────────────────────────────"
+echo "──────────────────────────────────────────────"
 echo " 8FIGURES Agent Pipeline"
-echo "──────────────────────────────────────────────────"
-echo " Agent   : ${AGENT^^}"
-echo " Task    : ${TASK}"
-echo " Context : ${CONTEXT_FILE}"
-echo " Log     : ${LOG_FILE}"
-echo "──────────────────────────────────────────────────"
+echo "──────────────────────────────────────────────"
+echo " Agent : ${AGENT_UPPER}"
+echo " Task  : ${TASK}"
+echo " Log   : ${LOG_FILE}"
+echo "──────────────────────────────────────────────"
 echo ""
-echo "Starting agent session…"
-echo ""
-
-# ── Launch Claude Code with agent context ─────────────────────────────────────
-# The --system-prompt flag prepends the agent context file contents.
-# The task description is passed as the initial user message.
-# Output is tee'd to the session log.
 
 CONTEXT_CONTENT="$(cat "${CONTEXT_FILE}")"
 
@@ -98,9 +78,7 @@ claude \
   "${TASK}" \
   | tee -a "${LOG_FILE}"
 
-# ── Mark session complete ──────────────────────────────────────────────────────
-
-cat >> "${LOG_FILE}" <<EOF
+cat >> "${LOG_FILE}" << EOF
 
 ---
 
@@ -112,6 +90,6 @@ complete
 EOF
 
 echo ""
-echo "──────────────────────────────────────────────────"
+echo "──────────────────────────────────────────────"
 echo " Session complete. Log: ${LOG_FILE}"
-echo "──────────────────────────────────────────────────"
+echo "──────────────────────────────────────────────"

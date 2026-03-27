@@ -208,6 +208,23 @@ npm install
 npm run dev                 # development with nodemon
 ```
 
+## Pipeline Git Rules
+CRITICAL: Every pipeline run MUST follow this git flow automatically.
+
+Before starting ANY pipeline task:
+1. Check current branch — if on main, create new branch
+2. Branch naming: pipeline/NNN-short-description
+   where NNN matches the task file number
+3. Never commit pipeline artifacts to main directly
+4. After QA approves: remind Engineering Director to open PR
+
+NOTE: This is a temporary manual approach. See ARCHITECTURE.md
+"## Pipeline Evolution" for the roadmap to fully automated
+PR creation where:
+- QA agent runs gh pr create automatically
+- REVIEWER report becomes PR description
+- Human gate moves from "create PR" to "click Merge"
+
 ## Definition of Done
 A feature is complete when:
 1. TypeScript compiles with zero errors
