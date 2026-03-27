@@ -208,6 +208,12 @@ npm install
 npm run dev                 # development with nodemon
 ```
 
+# Note on Pipeline Architecture
+Current pipeline uses human orchestration between 5 specialist
+agents. See design-docs/future-agents.md for planned
+ORCHESTRATOR and SCOUT-UX agents that will automate handoffs
+and add UX audit capability.
+
 ## Pipeline Git Rules
 CRITICAL: Every pipeline run MUST follow this git flow automatically.
 
