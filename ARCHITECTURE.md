@@ -204,3 +204,36 @@ Every file produced by AI in this project was held to these non-negotiable const
 | Cross-platform verification | 4 | iOS Simulator + Android Emulator both confirmed running |
 | Conventional commit history | 3 | All commits prefixed; no tagging applied post-phase |
 | Automated test suite | — | Out of scope for assessment; structure supports it |
+
+---
+
+## Pipeline Evolution
+
+### Current State — Human-Gated Pipeline
+- Pipeline runs on feature branch per task
+- Each agent produces artifact files as output
+- Human reviews every agent handoff (Engineering Director role)
+- Human creates PR after QA approval
+- Merge to main = deployment gate
+
+### Next Step — Semi-Automated PRs (1 day to implement)
+- QA agent runs: `gh pr create --title "pipeline/001" --body "$(cat review-reports/latest.md)"`
+- REVIEWER report becomes PR description automatically
+- Human gate moves from "create PR" to "click Merge"
+- Full audit trail lives in GitHub, not just local files
+- Requires: gh CLI + GitHub token in environment
+
+### Future — Full Integration (1 sprint to implement)
+- Jira ticket created → webhook → auto-generates task file
+- GitHub Projects card move → triggers pipeline run
+- Monday.com column change → spawns agent session
+- CronCreate schedules nightly SCOUT drift detection
+- Auto-creates tasks for new findings
+- Task files become the contract between PM and AI pipeline
+
+### Why Not Implemented Now
+Deliberate tradeoff decision:
+- Auto-PR creation adds gh CLI dependency and auth complexity
+- Risk of pipeline failure at final stage outweighs benefit
+- Architecture supports it — QA agent needs one additional bash command to enable
+- Describing the path is more valuable than rushing the implementation and breaking what works
