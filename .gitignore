@@ -7,9 +7,13 @@ dist/
 **/dist/
 frontend/.angular/
 
-# Capacitor native projects (generated)
-frontend/ios/
-frontend/android/
+# Capacitor native — ignore build artifacts, keep project files
+frontend/ios/.build/
+frontend/ios/App/Pods/
+frontend/ios/App/App.xcworkspace/xcuserdata/
+frontend/android/.gradle/
+frontend/android/app/build/
+frontend/android/build/
 
 # Environment files
 .env
