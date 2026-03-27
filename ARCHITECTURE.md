@@ -120,15 +120,87 @@ Component reads  → Signal getters    (portfolio(), loading(), etc.)
 
 ## 5. Pipeline Maturity Evidence
 
-| Signal | Implementation |
+### Level 4 Indicators
+
+Pipeline maturity in AI-assisted engineering is measured by how systematically the human engineer shapes, constrains, and reviews AI output — not just whether AI was used. Below is a concrete accounting of Level 4 indicators demonstrated in this project.
+
+---
+
+#### 5.1 Structured Phases with Build Gates
+
+The project was delivered in 6 phases. Each phase had an explicit exit criterion: zero TypeScript errors from `npm run build` before the next phase began. AI output was never carried forward in a broken state.
+
+```
+Phase 1  chore: initial project scaffold
+Phase 2  feat:  portfolio dashboard — holdings, P&L, loading/error/empty states
+Phase 3  feat:  AI chat — streaming, contextual responses, typing indicator
+Phase 4  chore: iOS and Android Capacitor platforms
+Phase 5  fix:   backend connectivity — Android routing, cleartext, CORS
+Phase 6  docs:  ARCHITECTURE.md + README.md
+```
+
+Each phase maps to a single atomic git commit with a conventional prefix. Evaluators can check out any commit and find a working, compiling application.
+
+---
+
+#### 5.2 Custom Slash Commands (Skills)
+
+Four `.claude/commands/` files encode project-specific standards as reusable skills. These are not documentation — they are active instructions that Claude Code loads when invoked as `/skill-name`.
+
+| Skill | Purpose |
 |---|---|
-| Phased delivery | 5 functional phases, each independently buildable |
-| Compile gate | `npm run build` with zero errors required before each commit |
-| Conventional commits | `chore:` / `feat:` / `fix:` prefixes throughout |
-| Custom slash command | `.claude/commands/new-component.md` — enforces component standards |
-| Error states | Every async operation has loading, error, and (where applicable) empty states |
-| No implicit any | `strict: true` in both frontend `tsconfig.json` and backend `tsconfig.json` |
-| DI hygiene | `inject()` function used exclusively — no constructor injection anywhere |
-| Subscription hygiene | `takeUntilDestroyed` on all subscriptions — no bare `subscribe()` calls |
-| Platform awareness | `Capacitor.getPlatform()` for runtime routing, not build-time flags |
-| Cross-platform verified | App deployed and running on both iOS Simulator and Android Emulator |
+| `/new-component` | Enforces standalone, OnPush, inject(), takeUntilDestroyed on every new component |
+| `/code-review` | 30-point checklist: TypeScript compliance, state completeness, Ionic rules, build gate |
+| `/feature-checklist` | Definition of done: compile, iOS, Android, all states, number formatting |
+| `/git-workflow` | Commit conventions, branch strategy, pre-commit gate commands |
+
+The existence of these skills demonstrates that the pipeline is **encoded**, not ad hoc. A new session picks up the same standards without re-explaining them.
+
+---
+
+#### 5.3 How AI Output Was Reviewed and Corrected
+
+AI output was not accepted verbatim. Each phase involved review cycles:
+
+**Phase 2 — Portfolio Dashboard**
+- AI imported `CurrencyPipe` but used a manual `formatCurrency()` method instead. The unused import produced a compiler warning. Caught and removed before commit.
+- Default Angular budget (500kB) triggered a warning once Ionic components were added. Reviewed, understood (Ionic standalone adds ~68kB), and budget adjusted with rationale.
+
+**Phase 3 — Chat**
+- AI omitted `DatePipe` from the standalone `imports` array despite using `| date` in the template. Build failed with `NG8004`. Caught at compile gate, fixed before commit.
+
+**Phase 4 — Capacitor**
+- AI's initial `.gitignore` excluded `frontend/ios/` and `frontend/android/` entirely — correct for generated build artifacts, wrong for the Xcode project and Gradle project files that must be committed. Reviewed, corrected to exclude only build artifacts (`Pods/`, `app/build/`, `.gradle/`).
+
+**Phase 5 — API Integration**
+- Three separate Android networking layers had to be diagnosed independently: `10.0.2.2` routing, cleartext traffic flag in `AndroidManifest.xml`, and mixed-content blocking from `androidScheme: 'https'`. Each was a distinct root cause. AI identified all three correctly after reading the manifest, but the diagnosis required directing it to read the right file.
+
+---
+
+#### 5.4 Standards Enforced Across All AI Output
+
+Every file produced by AI in this project was held to these non-negotiable constraints, defined upfront in `CLAUDE.md`:
+
+| Constraint | Enforcement mechanism |
+|---|---|
+| No `any` types | `strict: true` in tsconfig — compile error if violated |
+| Standalone only | `NG8004` / `NG6001` compile errors if NgModule patterns used |
+| `inject()` not constructor | Code review — not compiler-enforced, human-verified |
+| `takeUntilDestroyed` | Code review — grep `subscribe(` in components |
+| All three UI states | Feature checklist — manually verified on each simulator |
+| Conventional commits | Git workflow skill — applied before every commit |
+| Ionic CSS variables only | Code review — grep for hardcoded colors |
+
+---
+
+#### 5.5 Summary Table
+
+| Signal | Level | Evidence |
+|---|---|---|
+| Phased delivery with exit criteria | 4 | 6 phases, each gated on zero-error build |
+| Compile gate on every commit | 4 | `npm run build` verified before all 6 commits |
+| Encoded skills (slash commands) | 4 | 4 commands covering review, checklist, component, workflow |
+| AI output review cycle | 4 | 4 identified and corrected issues across phases |
+| Cross-platform verification | 4 | iOS Simulator + Android Emulator both confirmed running |
+| Conventional commit history | 3 | All commits prefixed; no tagging applied post-phase |
+| Automated test suite | — | Out of scope for assessment; structure supports it |
