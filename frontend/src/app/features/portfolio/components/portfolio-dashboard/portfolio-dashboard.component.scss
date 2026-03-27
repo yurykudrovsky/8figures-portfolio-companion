@@ -1,0 +1,186 @@
+// ── Summary Card ─────────────────────────────────────────────
+.summary-card {
+  background: var(--ion-color-primary);
+  border-radius: 16px;
+  padding: 24px 20px;
+  text-align: center;
+  margin-bottom: 24px;
+  color: var(--ion-color-primary-contrast);
+
+  &.skeleton-summary {
+    background: var(--ion-color-step-100);
+    min-height: 120px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+  }
+}
+
+.summary-label {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  opacity: 0.8;
+  margin: 0 0 4px;
+}
+
+.total-value {
+  font-size: 2.4rem;
+  font-weight: 700;
+  margin: 4px 0 8px;
+  letter-spacing: -0.02em;
+}
+
+.daily-change {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  margin: 0;
+
+  ion-icon {
+    font-size: 1.1rem;
+  }
+
+  &.gain {
+    color: #4ade80;
+  }
+
+  &.loss {
+    color: #f87171;
+  }
+}
+
+// ── Skeleton placeholders ─────────────────────────────────────
+.skeleton-value {
+  width: 60%;
+  height: 40px;
+  border-radius: 8px;
+}
+
+.skeleton-change {
+  width: 45%;
+  height: 20px;
+  border-radius: 6px;
+}
+
+// ── Section heading ───────────────────────────────────────────
+.section-heading {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--ion-color-medium);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin: 0 0 8px 4px;
+}
+
+// ── Holding Card ──────────────────────────────────────────────
+.holding-card {
+  margin: 0 0 12px;
+  border-radius: 12px;
+
+  ion-card-header {
+    padding-bottom: 0;
+  }
+}
+
+.holding-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.holding-title-group {
+  ion-card-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+  }
+
+  ion-card-subtitle {
+    font-size: 0.8rem;
+    margin-top: 2px;
+  }
+}
+
+.holding-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--ion-color-step-100);
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.holding-label {
+  font-size: 0.8rem;
+  color: var(--ion-color-medium);
+}
+
+.holding-value {
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.holding-current-value {
+  font-weight: 700;
+}
+
+// ── Gain / Loss colors ────────────────────────────────────────
+.gain {
+  color: var(--ion-color-success);
+}
+
+.loss {
+  color: var(--ion-color-danger);
+}
+
+// ── Error State ───────────────────────────────────────────────
+.error-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  text-align: center;
+  gap: 16px;
+}
+
+.error-icon {
+  font-size: 3rem;
+  color: var(--ion-color-danger);
+}
+
+.error-message {
+  color: var(--ion-color-medium);
+  font-size: 0.95rem;
+  max-width: 280px;
+}
+
+// ── Empty State ───────────────────────────────────────────────
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  text-align: center;
+  gap: 16px;
+
+  p {
+    color: var(--ion-color-medium);
+    font-size: 0.95rem;
+  }
+}
+
+.empty-icon {
+  font-size: 3rem;
+  color: var(--ion-color-medium);
+}
