@@ -1,0 +1,72 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/"></ion-back-button>
+    </ion-buttons>
+    <ion-title>
+      <ion-icon name="chatbubble-ellipses-outline"></ion-icon>
+      AI Advisor
+    </ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <div class="message-list" #messageList>
+
+    @if (messages().length === 0) {
+      <div class="empty-chat">
+        <ion-icon name="chatbubble-ellipses-outline" class="empty-icon"></ion-icon>
+        <p>Loading your portfolio data…</p>
+        <ion-spinner name="dots"></ion-spinner>
+      </div>
+    }
+
+    @for (msg of messages(); track msg.id) {
+      <div class="message-row" [class.user-row]="msg.role === 'user'" [class.assistant-row]="msg.role === 'assistant'">
+        <div class="bubble" [class.user-bubble]="msg.role === 'user'" [class.assistant-bubble]="msg.role === 'assistant'">
+          <p class="bubble-text">{{ msg.content }}<span class="cursor" [class.cursor-visible]="msg.isStreaming">▌</span></p>
+          <span class="bubble-time">{{ msg.timestamp | date: 'h:mm a' }}</span>
+        </div>
+      </div>
+    }
+
+    @if (isStreaming()) {
+      <div class="typing-indicator">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+    }
+
+  </div>
+</ion-content>
+
+<ion-footer>
+  <div class="input-bar">
+    <ion-textarea
+      class="chat-input"
+      [value]="inputText()"
+      (ionInput)="onInputChange($any($event.target).value)"
+      (keydown)="onKeydown($event)"
+      placeholder="Ask about your portfolio…"
+      [rows]="1"
+      [autoGrow]="true"
+      [disabled]="isStreaming()"
+      fill="outline"
+      shape="round"
+    ></ion-textarea>
+    <ion-button
+      class="send-btn"
+      (click)="sendMessage()"
+      [disabled]="!canSend"
+      shape="round"
+      color="primary"
+    >
+      @if (isStreaming()) {
+        <ion-spinner slot="icon-only" name="dots"></ion-spinner>
+      } @else {
+        <ion-icon slot="icon-only" name="send-outline"></ion-icon>
+      }
+    </ion-button>
+  </div>
+</ion-footer>

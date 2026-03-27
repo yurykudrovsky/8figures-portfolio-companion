@@ -8,6 +8,7 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { DecimalPipe, NgClass } from '@angular/common';
+import { Router } from '@angular/router';
 import {
   IonHeader,
   IonToolbar,
@@ -20,6 +21,7 @@ import {
   IonCardContent,
   IonSkeletonText,
   IonButton,
+  IonButtons,
   IonIcon,
   IonBadge,
   IonRefresher,
@@ -31,6 +33,7 @@ import {
   trendingUpOutline,
   trendingDownOutline,
   walletOutline,
+  chatbubbleEllipsesOutline,
 } from 'ionicons/icons';
 import { PortfolioService } from '../../../../core/services/portfolio.service';
 import { Portfolio } from '../../../../core/models/portfolio.model';
@@ -53,6 +56,7 @@ import { Portfolio } from '../../../../core/models/portfolio.model';
     IonCardContent,
     IonSkeletonText,
     IonButton,
+    IonButtons,
     IonIcon,
     IonBadge,
     IonRefresher,
@@ -63,6 +67,7 @@ import { Portfolio } from '../../../../core/models/portfolio.model';
 })
 export class PortfolioDashboardComponent implements OnInit {
   private readonly portfolioService = inject(PortfolioService);
+  private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
 
   portfolio = signal<Portfolio | null>(null);
@@ -77,7 +82,12 @@ export class PortfolioDashboardComponent implements OnInit {
       trendingUpOutline,
       trendingDownOutline,
       walletOutline,
+      chatbubbleEllipsesOutline,
     });
+  }
+
+  openChat(): void {
+    this.router.navigate(['/chat']);
   }
 
   ngOnInit(): void {
