@@ -13,7 +13,12 @@ function buildResponse(message: string, portfolio: Portfolio): string {
   const sign = portfolio.dailyChange >= 0 ? '+' : '';
 
   if (lower.includes('how is my portfolio') || lower.includes('portfolio doing')) {
-    return `Your portfolio is currently valued at ${totalValue}, with a daily change of ${sign}${dailyChange} (${sign}${dailyPct}%). You hold ${portfolio.holdings.length} positions across stocks, ETFs, and crypto. Overall your long-term cost basis shows healthy unrealized gains.`;
+    const topHoldings = [...portfolio.holdings]
+      .sort((a, b) => b.currentValue - a.currentValue)
+      .slice(0, 3)
+      .map(h => h.ticker)
+      .join(', ');
+    return `Your portfolio is currently valued at ${totalValue}, with a daily change of ${sign}${dailyChange} (${sign}${dailyPct}%). You hold ${portfolio.holdings.length} positions across stocks, ETFs, and crypto. Your largest positions include ${topHoldings}. Overall your long-term cost basis shows healthy unrealized gains.`;
   }
 
   if (lower.includes('best performer') || lower.includes('top performer')) {
