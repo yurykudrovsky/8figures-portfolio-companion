@@ -1,1 +1,11 @@
-/* You can add global styles to this file, and also import other style files */
+/* Global styles */
+
+/* iOS safe area — maps CSS env() insets to Ionic's CSS variables.
+   Requires viewport-fit=cover in index.html (already set).
+   ion-header and ion-footer consume these automatically. */
+:root {
+  --ion-safe-area-top: env(safe-area-inset-top);
+  --ion-safe-area-bottom: env(safe-area-inset-bottom);
+  --ion-safe-area-left: env(safe-area-inset-left);
+  --ion-safe-area-right: env(safe-area-inset-right);
+}

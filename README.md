@@ -1,15 +1,18 @@
 # 8FIGURES — AI Portfolio Companion
 
-A mobile-first AI portfolio companion built with Angular 21, Ionic 8, and Capacitor 6. Runs natively on iOS Simulator and Android Emulator with a live Node/Express backend.
+A mobile-first AI portfolio companion built with Angular 21, Ionic 8, and Capacitor 6. Runs natively on iOS Simulator and Android Emulator with a live Node/Express backend and real Anthropic Claude AI.
 
 ---
 
 ## Features
 
+<!-- AUTO-DOCS:FEATURES:START -->
 - **Portfolio Dashboard** — holdings list, total value, daily P&L with green/red formatting, pull-to-refresh
-- **AI Chat Interface** — character-by-character streaming responses, portfolio-aware context, typing indicator
+- **Bloomberg Dark Theme** — premium `#0a0a0f` terminal UI with teal accent (`#00d4aa`), gain/loss pill badges, left accent bars, staggered card fade-in, and count-up hero value animation
+- **AI Chat Interface** — real Anthropic Claude API (`claude-haiku-4-5-20251001`) with character-by-character SSE streaming, full portfolio context injected into system prompt, graceful mock fallback when API key is absent
 - **Loading / Error / Empty states** — every async operation is fully handled
 - **Cross-platform** — iOS Simulator (iPhone 17 Pro) and Android Emulator (API 36)
+<!-- AUTO-DOCS:FEATURES:END -->
 
 ---
 
@@ -20,15 +23,17 @@ powered by Claude Code. The pipeline is as much a deliverable
 as the application itself.
 
 ### Pipeline Architecture
-5 specialist agents with human gates at every handoff:
+7 specialist agents with human gates at every handoff:
 
 | Agent | Role | Output |
 |---|---|---|
 | SCOUT | Read-only auditor — finds issues, never fixes | audit-reports/ |
 | ARCHITECT | Design authority — designs fixes, never implements | design-docs/ |
+| SPECS | Translates design into user-facing acceptance criteria | specs/ |
+| QA-FIRST | Writes failing test stubs before BUILDER touches code (ATDD) | qa-first-reports/ |
 | BUILDER | Implementation only — follows design exactly | source code |
 | REVIEWER | Quality gate — verifies against CLAUDE.md rules | review-reports/ |
-| QA | Test authority — writes tests, never fixes impl | qa-reports/ |
+| QA-VERIFY | Test authority — confirms all ACs pass, writes final report | qa-reports/ |
 
 ### How to Run the Pipeline
 Every feature follows this workflow:
@@ -37,28 +42,39 @@ Every feature follows this workflow:
 2. Execute: `"Execute task from tasks/NNN-task-name.md"`
 3. Review each agent output at human gate
 4. Approve or reject before next stage
-5. Merge PR after QA passes
+5. Merge PR after QA-VERIFY passes
 
 ### Pipeline Evidence
 All pipeline runs produce artifacts committed to the repo:
 - `audit-reports/` — SCOUT findings with CONFIRMED/FIXED/NEW status
 - `design-docs/` — ARCHITECT designs before any code is written
+- `specs/` — SPECS acceptance criteria per feature
+- `qa-first-reports/` — ATDD failing stubs before implementation
 - `review-reports/` — REVIEWER verdicts with exact grep evidence
-- `qa-reports/` — QA results with test counts
-- `logs/agent-sessions/` — timestamped session logs
+- `qa-reports/` — QA-VERIFY results with test counts
 
 ### Pipeline Configuration
 - `CLAUDE.md` — project standards encoded before first line of code
-- `.claude/agents/` — 5 specialist agent context files
-- `.claude/commands/` — 6 reusable skills
+- `.claude/agents/` — 7 specialist agent context files
+- `.claude/commands/` — 6 reusable skills (see below)
 - `tasks/` — structured task specs (reproducible, version controlled)
 - `scripts/run-agent.sh` — agent launcher with branch safety check
+
+### Skills (slash commands)
+
+| Command | Purpose |
+|---|---|
+| `/new-component` | Scaffold a new Angular standalone component |
+| `/code-review` | Run a structured code review checklist |
+| `/git-workflow` | Conventional commit + branch naming guide |
+| `/test-workflow` | Run tests and interpret results |
+| `/feature-checklist` | Pre-merge feature completeness checklist |
+| `/testing-strategy` | ATDD strategy guide for new features |
 
 ### Future Evolution
 - Semi-automated PRs via gh CLI (1 day)
 - Jira/GitHub webhook integration (1 sprint)
 - ORCHESTRATOR agent for autonomous pipeline execution (1 sprint)
-- ATDD with QA-FIRST red-green-refactor (1 sprint)
 - Parallel worktree execution for concurrent pipelines (1 sprint)
 
 See [ARCHITECTURE.md](./ARCHITECTURE.md) "Pipeline Evolution" and
@@ -107,7 +123,17 @@ cd backend
 npm install
 ```
 
-### 3. Install frontend dependencies
+### 3. Configure environment (optional — enables real Claude AI)
+
+```bash
+# Create backend/.env
+echo "ANTHROPIC_API_KEY=sk-ant-api03-..." > backend/.env
+```
+
+Without this, the app falls back to pre-built mock responses. With it, all chat
+responses come from `claude-haiku-4-5-20251001` with your full portfolio as context.
+
+### 4. Install frontend dependencies
 
 ```bash
 cd ../frontend
@@ -144,7 +170,7 @@ npm start
 | `GET` | `/api/health` | Health check |
 | `GET` | `/api/portfolio` | Full portfolio with holdings |
 | `GET` | `/api/portfolio/holdings` | Holdings array only |
-| `POST` | `/api/chat` | SSE streaming chat response |
+| `POST` | `/api/chat` | SSE streaming chat — real Claude API or mock fallback |
 
 `POST /api/chat` request body:
 ```json
@@ -153,6 +179,22 @@ npm start
   "context": { "portfolio": { ... }, "messages": [] }
 }
 ```
+
+Response: `text/event-stream` — `data: {"char":"X"}\n\n` per character, `data: {"done":true}\n\n` on complete.
+
+---
+
+## Tests
+
+```bash
+# Frontend — 30 tests (Vitest)
+cd frontend && npx ng test --watch=false
+
+# Backend — 12 tests (Jest + Supertest)
+cd backend && npm test
+```
+
+**42 tests total, 0 failing.**
 
 ---
 
@@ -169,8 +211,8 @@ cd ../frontend
 npm run build
 npx cap sync
 
-# 3. Run on iPhone 17 Pro (or adjust --target to any available simulator)
-npx cap run ios --target "iPhone 17 Pro"
+# 3. Run on iPhone 17 Pro (UUID — use xcrun simctl list to find yours)
+npx cap run ios --target "E9E266F9-6987-425C-B745-BECD299DE9FC"
 
 # List available simulators:
 xcrun simctl list devices available | grep iPhone
@@ -197,7 +239,7 @@ npx cap sync
 $ANDROID_SDK_ROOT/emulator/emulator -avd Medium_Phone_API_36.1 -no-snapshot-save &
 
 # Wait for boot, then deploy:
-npx cap run android --target Medium_Phone_API_36.1
+npx cap run android --target emulator-5554
 
 # List available AVDs:
 $ANDROID_SDK_ROOT/emulator/emulator -list-avds
@@ -217,12 +259,12 @@ $ANDROID_SDK_ROOT/emulator/emulator -list-avds
 │
 ├── backend/                         # Node.js + Express API
 │   ├── src/
-│   │   ├── index.ts                 # Express app entry point + health route
+│   │   ├── index.ts                 # Express app entry point + dotenv + health route
 │   │   ├── models/
 │   │   │   └── portfolio.model.ts   # Shared TypeScript interfaces
 │   │   ├── routes/
 │   │   │   ├── portfolio.ts         # GET /api/portfolio, /api/portfolio/holdings
-│   │   │   └── chat.ts              # POST /api/chat (SSE streaming)
+│   │   │   └── chat.ts              # POST /api/chat — real Claude API + mock fallback
 │   │   └── data/
 │   │       └── mock-portfolio.ts    # 8 holdings, ~$125k total value
 │   ├── tsconfig.json                # strict: true
@@ -233,6 +275,10 @@ $ANDROID_SDK_ROOT/emulator/emulator -list-avds
 │   ├── android/                     # Capacitor Android project
 │   ├── ios/                         # Capacitor iOS project
 │   └── src/
+│       ├── index.html               # viewport-fit=cover (iOS safe area)
+│       ├── styles.scss              # Safe area CSS env() → Ionic variables
+│       ├── theme/
+│       │   └── variables.css        # Bloomberg design tokens + Ionic dark overrides
 │       ├── environments/
 │       │   ├── environment.ts       # apiUrl: http://localhost:3000/api
 │       │   └── environment.prod.ts  # apiUrl: /api
@@ -247,21 +293,21 @@ $ANDROID_SDK_ROOT/emulator/emulator -list-avds
 │           ├── features/
 │           │   ├── portfolio/
 │           │   │   └── components/portfolio-dashboard/
-│           │   │       ├── *.component.ts    # OnPush, inject(), signals, takeUntilDestroyed
-│           │   │       ├── *.component.html  # Skeleton, error+retry, holdings cards
-│           │   │       └── *.component.scss  # CSS variables, gain/loss colors
+│           │   │       ├── *.component.ts    # OnPush, inject(), signals, count-up animation
+│           │   │       ├── *.component.html  # Hero value, staggered cards, gain/loss pills
+│           │   │       └── *.component.scss  # Bloomberg dark tokens, stagger @keyframes
 │           │   └── chat/
 │           │       ├── models/chat.model.ts
-│           │       ├── services/chat.service.ts  # streamResponse() Observable pattern
+│           │       ├── services/chat.service.ts  # SSE streaming via HttpClient + Observable
 │           │       └── components/chat-page/
 │           │           ├── *.component.ts    # Streaming, auto-scroll, disabled send
-│           │           ├── *.component.html  # Bubbles, typing indicator, ion-footer input
-│           │           └── *.component.scss  # User/assistant bubble styling, animations
+│           │           ├── *.component.html  # Dark bubbles, typing indicator, ion-footer input
+│           │           └── *.component.scss  # Slide-in animation, accent send button
 │           └── shared/              # (reserved for future shared UI components)
 │
 └── .claude/
-    └── commands/
-        └── new-component.md         # /new-component slash command
+    ├── agents/                      # 7 specialist agent context files
+    └── commands/                    # 6 reusable slash command skills
 ```
 
 ---
@@ -270,7 +316,7 @@ $ANDROID_SDK_ROOT/emulator/emulator -list-avds
 
 See [ARCHITECTURE.md](./ARCHITECTURE.md) for detailed rationale on:
 - Standalone components vs NgModules
-- Mock streaming design
+- Real Claude API integration + mock fallback design
 - Feature-based folder structure
 - Android networking (`10.0.2.2` routing)
 - Reactive patterns (Signals + RxJS)
@@ -286,4 +332,5 @@ See [ARCHITECTURE.md](./ARCHITECTURE.md) for detailed rationale on:
 | Native bridge | Capacitor 6 |
 | Reactive | RxJS + Angular Signals |
 | Backend | Node.js + Express 4 |
+| AI | Anthropic Claude (`claude-haiku-4-5-20251001`) |
 | Language | TypeScript 5 (strict mode, no `any`) |
