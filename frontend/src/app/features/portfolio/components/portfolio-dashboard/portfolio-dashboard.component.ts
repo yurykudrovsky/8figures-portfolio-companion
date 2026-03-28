@@ -198,9 +198,9 @@ export class PortfolioDashboardComponent implements OnInit {
   }
 
   arcPath(segment: ChartSegment): string {
-    // Thinner ring: outer r=80, inner r=70 (10px stroke)
-    // Gap: shrink each segment by 1.5° (0.026 rad) on each side
-    const cx = 100, cy = 100, r = 80, innerR = 70;
+    // viewBox 320×320: outer r=128, inner r=118 (10px stroke, ~8% of r)
+    // Gap: shrink each segment by 0.026 rad on each side
+    const cx = 160, cy = 160, r = 128, innerR = 118;
     const GAP = 0.026; // radians — produces ~2-3px gap at this radius
     const start = segment.startAngle + GAP;
     const end = segment.endAngle - GAP;

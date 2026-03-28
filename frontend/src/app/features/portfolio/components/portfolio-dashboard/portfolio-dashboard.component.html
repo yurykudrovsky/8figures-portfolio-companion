@@ -71,7 +71,7 @@
 
     @if (chartSegments().length > 0) {
       <div class="chart-section">
-        <svg class="donut-chart" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+        <svg class="donut-chart" viewBox="0 0 320 320" xmlns="http://www.w3.org/2000/svg">
           @for (seg of chartSegments(); track seg.label) {
             <path
               [attr.d]="arcPath(seg)"
@@ -79,8 +79,8 @@
               class="chart-segment"
             />
           }
-          <text x="100" y="96" class="chart-centre-label">{{ chartSegments()[0]?.label }}</text>
-          <text x="100" y="114" class="chart-centre-sub">{{ ((chartSegments()[0]?.percent ?? 0) * 100 | number:'1.1-1') + '% largest' }}</text>
+          <text x="160" y="150" class="chart-centre-label">Total Value</text>
+          <text x="160" y="186" class="chart-centre-value">{{ formatCurrency(displayValue()) }}</text>
         </svg>
         <div class="chart-legend">
           @for (seg of chartSegments(); track seg.label) {
