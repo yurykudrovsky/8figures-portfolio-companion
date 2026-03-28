@@ -237,3 +237,16 @@ Deliberate tradeoff decision:
 - Risk of pipeline failure at final stage outweighs benefit
 - Architecture supports it — QA agent needs one additional bash command to enable
 - Describing the path is more valuable than rushing the implementation and breaking what works
+
+### Testing Strategy Evolution
+
+Current: Unit tests (Vitest) — 27 passing
+Next: TDD++ — QA-FIRST red-green-refactor pipeline
+Then: Contract Testing (Pact.io) — consumer-driven API contracts
+Then: Property-Based Testing (fast-check) — financial edge cases
+
+Full testing pyramid for production fintech:
+- Unit tests (current) — fast, isolated
+- Contract tests (next) — API stability guaranteed
+- Property tests (next) — financial edge cases covered
+- E2E tests (future) — full user journey on device
