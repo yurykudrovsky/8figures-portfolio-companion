@@ -23,7 +23,6 @@ import {
   IonButton,
   IonButtons,
   IonIcon,
-  IonBadge,
   IonRefresher,
   IonRefresherContent,
 } from '@ionic/angular/standalone';
@@ -58,7 +57,6 @@ import { Portfolio } from '../../../../core/models/portfolio.model';
     IonButton,
     IonButtons,
     IonIcon,
-    IonBadge,
     IonRefresher,
     IonRefresherContent,
   ],
@@ -73,6 +71,7 @@ export class PortfolioDashboardComponent implements OnInit {
   portfolio = signal<Portfolio | null>(null);
   loading = signal<boolean>(true);
   error = signal<string | null>(null);
+  displayValue = signal<number>(0);
 
   readonly skeletonItems = Array.from({ length: 5 });
 
@@ -97,6 +96,7 @@ export class PortfolioDashboardComponent implements OnInit {
         next: (data) => {
           this.portfolio.set(data);
           this.loading.set(false);
+          this.startCountUp(data.totalValue);
         },
         error: () => {
           this.error.set('Unable to load portfolio. Please check your connection and try again.');
@@ -116,6 +116,7 @@ export class PortfolioDashboardComponent implements OnInit {
         next: (data) => {
           this.portfolio.set(data);
           this.loading.set(false);
+          this.startCountUp(data.totalValue);
           (event.target as HTMLIonRefresherElement).complete();
         },
         error: () => {
@@ -124,6 +125,26 @@ export class PortfolioDashboardComponent implements OnInit {
           (event.target as HTMLIonRefresherElement).complete();
         },
       });
+  }
+
+  private startCountUp(targetValue: number): void {
+    const duration = 600;
+    const intervalMs = 10;
+    const steps = duration / intervalMs;
+    const increment = targetValue / steps;
+    let current = 0;
+    let ticks = 0;
+
+    const timer: ReturnType<typeof setInterval> = setInterval(() => {
+      ticks++;
+      current += increment;
+      if (ticks >= steps) {
+        this.displayValue.set(targetValue);
+        clearInterval(timer);
+      } else {
+        this.displayValue.set(Math.round(current));
+      }
+    }, intervalMs);
   }
 
   formatCurrency(value: number): string {
