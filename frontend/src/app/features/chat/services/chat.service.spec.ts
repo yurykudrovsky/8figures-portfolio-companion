@@ -119,6 +119,62 @@ describe('ChatService', () => {
       sub.unsubscribe();
       expect(clearSpy).toHaveBeenCalled();
     });
+
+    // ── STREAMING_INTERVAL_MS behavioural tests ────────────────
+    // These three tests verify that the 15ms interval constant governs
+    // emission timing.  The outer beforeEach/afterEach already calls
+    // vi.useFakeTimers() / vi.useRealTimers() so no per-test setup is needed.
+
+    it('STREAMING_INTERVAL_MS: first character emits after exactly 15ms, not before', () => {
+      const chars: string[] = [];
+      service.streamResponse('hello').subscribe({ next: (c) => chars.push(c) });
+
+      // 14ms — interval has not fired yet; no emission expected
+      vi.advanceTimersByTime(14);
+      expect(chars).toHaveLength(0);
+
+      // advance the remaining 1ms to reach exactly 15ms — first tick fires
+      vi.advanceTimersByTime(1);
+      expect(chars).toEqual(['h']);
+    });
+
+    it('STREAMING_INTERVAL_MS: no emission before 15ms for single-character input', () => {
+      // Guards against a hypothetical regression where the interval is set to 0
+      // or an immediate emission is added before the interval fires.
+      const chars: string[] = [];
+      service.streamResponse('x').subscribe({ next: (c) => chars.push(c) });
+
+      vi.advanceTimersByTime(14);
+      expect(chars).toHaveLength(0);
+    });
+
+    it('STREAMING_INTERVAL_MS: stream completes on tick N+1 (at (N+1)*15ms) for length-N string', () => {
+      // Implementation emits char[i] on tick i+1, then on tick N+1 (when
+      // index === text.length) it calls clearInterval and observer.complete().
+      // For 'ab' (N=2): emit 'a' at 15ms, emit 'b' at 30ms, complete at 45ms.
+      //
+      // Note: the task spec suggested done===true at 30ms for N=2, but the
+      // setInterval implementation requires one additional tick to detect
+      // exhaustion and call observer.complete(). The existing suite test
+      // "completes after all characters are emitted" already validates 45ms
+      // for 'AB'. This test follows the same correct model.
+      const chars: string[] = [];
+      let done = false;
+
+      service.streamResponse('ab').subscribe({
+        next: (c) => chars.push(c),
+        complete: () => (done = true),
+      });
+
+      // At 30ms both characters have been emitted but complete has not fired
+      vi.advanceTimersByTime(30);
+      expect(chars).toEqual(['a', 'b']);
+      expect(done).toBe(false);
+
+      // At 45ms the exhaustion tick fires: clearInterval + observer.complete()
+      vi.advanceTimersByTime(15);
+      expect(done).toBe(true);
+    });
   });
 
   // ── Response routing ───────────────────────────────────────

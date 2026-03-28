@@ -46,7 +46,7 @@
     <ion-textarea
       class="chat-input"
       [value]="inputText()"
-      (ionInput)="onInputChange($any($event.target).value)"
+      (ionInput)="onInputChange($event)"
       (keydown)="onKeydown($event)"
       placeholder="Ask about your portfolio…"
       [rows]="1"

@@ -54,30 +54,31 @@
 
   <!-- ── Data State ─────────────────────────────────────────── -->
   @if (!loading() && !error() && portfolio()) {
+    @let p = portfolio()!;
     <div class="summary-card">
       <p class="summary-label">Total Portfolio Value</p>
-      <h1 class="total-value">{{ formatCurrency(portfolio()!.totalValue) }}</h1>
+      <h1 class="total-value">{{ formatCurrency(p.totalValue) }}</h1>
       <p
         class="daily-change"
-        [ngClass]="portfolio()!.dailyChange >= 0 ? 'gain' : 'loss'"
+        [ngClass]="p.dailyChange >= 0 ? 'gain' : 'loss'"
       >
         <ion-icon
-          [name]="portfolio()!.dailyChange >= 0 ? 'trending-up-outline' : 'trending-down-outline'"
+          [name]="p.dailyChange >= 0 ? 'trending-up-outline' : 'trending-down-outline'"
         ></ion-icon>
-        {{ formatChange(portfolio()!.dailyChange, portfolio()!.dailyChangePercent) }}
+        {{ formatChange(p.dailyChange, p.dailyChangePercent) }}
       </p>
     </div>
 
-    <h2 class="section-heading">Holdings ({{ portfolio()!.holdings.length }})</h2>
+    <h2 class="section-heading">Holdings ({{ p.holdings.length }})</h2>
 
-    @if (portfolio()!.holdings.length === 0) {
+    @if (p.holdings.length === 0) {
       <div class="empty-state">
         <ion-icon name="wallet-outline" class="empty-icon"></ion-icon>
         <p>No holdings found. Add assets to get started.</p>
       </div>
     }
 
-    @for (holding of portfolio()!.holdings; track holding.id) {
+    @for (holding of p.holdings; track holding.id) {
       <ion-card class="holding-card">
         <ion-card-header>
           <div class="holding-header">

@@ -3,6 +3,8 @@ import { Observable } from 'rxjs';
 import { Portfolio } from '../../../core/models/portfolio.model';
 import { ChatMessage } from '../models/chat.model';
 
+const STREAMING_INTERVAL_MS = 15;
+
 @Injectable({ providedIn: 'root' })
 export class ChatService {
   // ── Mandatory streaming pattern from CLAUDE.md ────────────────
@@ -17,7 +19,7 @@ export class ChatService {
           clearInterval(interval);
           observer.complete();
         }
-      }, 15);
+      }, STREAMING_INTERVAL_MS);
 
       // Cleanup on unsubscribe
       return () => clearInterval(interval);

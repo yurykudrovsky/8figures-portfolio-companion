@@ -71,9 +71,7 @@ export class ChatPageComponent implements OnInit, AfterViewChecked {
   portfolio = signal<Portfolio | null>(null);
   private shouldScrollToBottom = false;
 
-  constructor() {
-    addIcons({ sendOutline, chatbubbleEllipsesOutline });
-  }
+  private readonly _icons = addIcons({ sendOutline, chatbubbleEllipsesOutline });
 
   ngOnInit(): void {
     this.portfolioService
@@ -101,15 +99,16 @@ export class ChatPageComponent implements OnInit, AfterViewChecked {
     return this.inputText().trim().length > 0 && !this.isStreaming() && this.portfolio() !== null;
   }
 
-  onInputChange(value: string): void {
-    this.inputText.set(value);
+  onInputChange(event: Event): void {
+    const detail = (event as CustomEvent<{ value: string | null | undefined }>).detail;
+    this.inputText.set(detail.value ?? '');
   }
 
   sendMessage(): void {
     const text = this.inputText().trim();
-    if (!text || this.isStreaming() || !this.portfolio()) return;
-
-    const portfolio = this.portfolio()!;
+    if (!text || this.isStreaming()) return;
+    const portfolio = this.portfolio();
+    if (!portfolio) return;
 
     const userMsg: ChatMessage = {
       id: crypto.randomUUID(),

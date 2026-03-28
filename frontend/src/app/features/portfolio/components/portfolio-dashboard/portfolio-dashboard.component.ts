@@ -76,15 +76,7 @@ export class PortfolioDashboardComponent implements OnInit {
 
   readonly skeletonItems = Array.from({ length: 5 });
 
-  constructor() {
-    addIcons({
-      alertCircleOutline,
-      trendingUpOutline,
-      trendingDownOutline,
-      walletOutline,
-      chatbubbleEllipsesOutline,
-    });
-  }
+  private readonly _icons = addIcons({ alertCircleOutline, trendingUpOutline, trendingDownOutline, walletOutline, chatbubbleEllipsesOutline });
 
   openChat(): void {
     this.router.navigate(['/chat']);
