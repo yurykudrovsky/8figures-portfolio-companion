@@ -208,6 +208,42 @@ npm install
 npm run dev                 # development with nodemon
 ```
 
+# Note on Pipeline Architecture
+Current pipeline uses human orchestration between 5 specialist
+agents. See design-docs/future-agents.md for planned
+ORCHESTRATOR and SCOUT-UX agents that will automate handoffs
+and add UX audit capability.
+
+# Docs-as-Code Principle
+Every pipeline decision is documented before execution.
+Task files (tasks/NNN-*.md) are the executable specs — they define
+agent inputs, outputs, constraints, and handoff conditions.
+No pipeline run starts without a written task file.
+Failure handling: see design-docs/pipeline-failure-handling.md.
+Future agents: see design-docs/future-agents.md.
+
+## Pipeline Git Rules
+CRITICAL: Every pipeline run MUST follow this git flow automatically.
+
+Before starting ANY pipeline task:
+1. Check current branch — if on main, create new branch
+2. Branch naming: pipeline/NNN-short-description
+   where NNN matches the task file number
+3. Never commit pipeline artifacts to main directly
+4. After QA approves: remind Engineering Director to open PR
+
+NOTE: This is a temporary manual approach. See ARCHITECTURE.md
+"## Pipeline Evolution" for the roadmap to fully automated
+PR creation where:
+- QA agent runs gh pr create automatically
+- REVIEWER report becomes PR description
+- Human gate moves from "create PR" to "click Merge"
+
+FAILURE HANDLING: See design-docs/pipeline-failure-handling.md
+for all failure scenarios, retry protocols, and escalation rules.
+No agent silently swallows errors — every failure produces a
+structured report.
+
 ## Definition of Done
 A feature is complete when:
 1. TypeScript compiles with zero errors

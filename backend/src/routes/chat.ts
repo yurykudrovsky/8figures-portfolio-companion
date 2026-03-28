@@ -1,6 +1,8 @@
 import { Router, Request, Response } from 'express';
 import { ChatRequest, Portfolio } from '../models/portfolio.model';
 
+const STREAMING_INTERVAL_MS = 15;
+
 const router = Router();
 
 function buildResponse(message: string, portfolio: Portfolio): string {
@@ -72,7 +74,7 @@ router.post('/', (req: Request, res: Response): void => {
       clearInterval(interval);
       res.end();
     }
-  }, 15);
+  }, STREAMING_INTERVAL_MS);
 });
 
 export default router;
