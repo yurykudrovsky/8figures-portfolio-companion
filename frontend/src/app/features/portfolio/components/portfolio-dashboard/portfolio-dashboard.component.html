@@ -79,13 +79,13 @@
               class="chart-segment"
             />
           }
-          <text x="100" y="95" class="chart-centre-label">{{ formatCurrency(displayValue()) }}</text>
-          <text x="100" y="115" class="chart-centre-sub">Total Value</text>
+          <text x="100" y="96" class="chart-centre-label">{{ chartSegments()[0]?.label }}</text>
+          <text x="100" y="114" class="chart-centre-sub">{{ ((chartSegments()[0]?.percent ?? 0) * 100 | number:'1.1-1') + '% largest' }}</text>
         </svg>
         <div class="chart-legend">
           @for (seg of chartSegments(); track seg.label) {
             <div class="legend-item">
-              <span class="legend-dot" [style.background]="seg.color"></span>
+              <span class="legend-pill" [style.background]="seg.color"></span>
               <span class="legend-label">{{ seg.label }}</span>
               <span class="legend-pct">{{ (seg.percent * 100).toFixed(1) }}%</span>
             </div>

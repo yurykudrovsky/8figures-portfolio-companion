@@ -293,44 +293,48 @@ ion-refresher {
 }
 
 .chart-centre-label {
-  font-size: 14px;
-  font-weight: 700;
+  font-size: 13px;
+  font-weight: 400;
   fill: var(--app-text-primary);
   text-anchor: middle;
-  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
 }
 
 .chart-centre-sub {
   font-size: 9px;
+  font-weight: 400;
   fill: var(--app-text-secondary);
   text-anchor: middle;
+  letter-spacing: 0.03em;
 }
 
 .chart-legend {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 8px 16px;
-  margin-top: 12px;
+  gap: 6px 14px;
+  margin-top: 10px;
   padding-bottom: 4px;
 }
 
 .legend-item {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
 }
 
-.legend-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
+.legend-pill {
+  width: 16px;
+  height: 4px;
+  border-radius: 2px;
   flex-shrink: 0;
+  opacity: 0.85;
 }
 
 .legend-label {
-  font-size: 12px;
+  font-size: 11px;
   color: var(--app-text-secondary);
+  letter-spacing: 0.02em;
 }
 
 .legend-pct {

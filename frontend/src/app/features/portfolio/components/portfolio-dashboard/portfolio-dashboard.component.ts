@@ -88,7 +88,7 @@ export class PortfolioDashboardComponent implements OnInit {
   private readonly SEGMENT_COLORS: Record<string, string> = {
     stock: 'var(--app-accent)',
     crypto: '#f59e0b',
-    etf: '#6366f1',
+    etf: '#6b8cff',
     bond: '#94a3b8',
   };
 
@@ -198,16 +198,21 @@ export class PortfolioDashboardComponent implements OnInit {
   }
 
   arcPath(segment: ChartSegment): string {
-    const cx = 100, cy = 100, r = 80, innerR = 52;
-    const x1 = cx + r * Math.sin(segment.startAngle);
-    const y1 = cy - r * Math.cos(segment.startAngle);
-    const x2 = cx + r * Math.sin(segment.endAngle);
-    const y2 = cy - r * Math.cos(segment.endAngle);
-    const ix1 = cx + innerR * Math.sin(segment.startAngle);
-    const iy1 = cy - innerR * Math.cos(segment.startAngle);
-    const ix2 = cx + innerR * Math.sin(segment.endAngle);
-    const iy2 = cy - innerR * Math.cos(segment.endAngle);
-    const large = segment.endAngle - segment.startAngle > Math.PI ? 1 : 0;
+    // Thinner ring: outer r=80, inner r=70 (10px stroke)
+    // Gap: shrink each segment by 1.5° (0.026 rad) on each side
+    const cx = 100, cy = 100, r = 80, innerR = 70;
+    const GAP = 0.026; // radians — produces ~2-3px gap at this radius
+    const start = segment.startAngle + GAP;
+    const end = segment.endAngle - GAP;
+    const x1 = cx + r * Math.sin(start);
+    const y1 = cy - r * Math.cos(start);
+    const x2 = cx + r * Math.sin(end);
+    const y2 = cy - r * Math.cos(end);
+    const ix1 = cx + innerR * Math.sin(start);
+    const iy1 = cy - innerR * Math.cos(start);
+    const ix2 = cx + innerR * Math.sin(end);
+    const iy2 = cy - innerR * Math.cos(end);
+    const large = end - start > Math.PI ? 1 : 0;
     return [
       `M ${x1} ${y1}`,
       `A ${r} ${r} 0 ${large} 1 ${x2} ${y2}`,
