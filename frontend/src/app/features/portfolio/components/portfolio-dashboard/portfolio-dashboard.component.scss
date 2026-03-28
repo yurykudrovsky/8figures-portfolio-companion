@@ -272,3 +272,70 @@ ion-refresher {
   font-size: 3rem;
   color: var(--ion-color-medium);
 }
+
+// ── Donut Chart ───────────────────────────────────────────────
+.chart-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 16px 16px;
+}
+
+.donut-chart {
+  width: 180px;
+  height: 180px;
+  overflow: visible;
+}
+
+.chart-segment {
+  opacity: 0.92;
+  transition: opacity 0.2s;
+}
+
+.chart-centre-label {
+  font-size: 14px;
+  font-weight: 700;
+  fill: var(--app-text-primary);
+  text-anchor: middle;
+  font-variant-numeric: tabular-nums;
+}
+
+.chart-centre-sub {
+  font-size: 9px;
+  fill: var(--app-text-secondary);
+  text-anchor: middle;
+}
+
+.chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px 16px;
+  margin-top: 12px;
+  padding-bottom: 4px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.legend-label {
+  font-size: 12px;
+  color: var(--app-text-secondary);
+}
+
+.legend-pct {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--app-text-primary);
+  font-variant-numeric: tabular-nums;
+}

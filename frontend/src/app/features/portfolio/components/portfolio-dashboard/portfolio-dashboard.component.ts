@@ -3,6 +3,7 @@ import {
   Component,
   DestroyRef,
   OnInit,
+  computed,
   inject,
   signal,
 } from '@angular/core';
@@ -36,6 +37,15 @@ import {
 } from 'ionicons/icons';
 import { PortfolioService } from '../../../../core/services/portfolio.service';
 import { Portfolio } from '../../../../core/models/portfolio.model';
+
+interface ChartSegment {
+  label: string;
+  percent: number;
+  value: number;
+  color: string;
+  startAngle: number;
+  endAngle: number;
+}
 
 @Component({
   selector: 'app-portfolio-dashboard',
@@ -74,6 +84,46 @@ export class PortfolioDashboardComponent implements OnInit {
   displayValue = signal<number>(0);
 
   readonly skeletonItems = Array.from({ length: 5 });
+
+  private readonly SEGMENT_COLORS: Record<string, string> = {
+    stock: 'var(--app-accent)',
+    crypto: '#f59e0b',
+    etf: '#6366f1',
+    bond: '#94a3b8',
+  };
+
+  private readonly SEGMENT_LABELS: Record<string, string> = {
+    stock: 'Stocks',
+    crypto: 'Crypto',
+    etf: 'ETFs',
+    bond: 'Bonds',
+  };
+
+  readonly chartSegments = computed<ChartSegment[]>(() => {
+    const p = this.portfolio();
+    if (!p) return [];
+
+    const groups: Record<string, number> = {};
+    for (const h of p.holdings) {
+      groups[h.assetType] = (groups[h.assetType] ?? 0) + h.currentValue;
+    }
+
+    let cumulative = 0;
+    return Object.entries(groups).map(([type, value]) => {
+      const percent = value / p.totalValue;
+      const startAngle = cumulative * 2 * Math.PI;
+      cumulative += percent;
+      const endAngle = cumulative * 2 * Math.PI;
+      return {
+        label: this.SEGMENT_LABELS[type] ?? type,
+        percent,
+        value,
+        color: this.SEGMENT_COLORS[type] ?? '#8892a4',
+        startAngle,
+        endAngle,
+      };
+    });
+  });
 
   private readonly _icons = addIcons({ alertCircleOutline, trendingUpOutline, trendingDownOutline, walletOutline, chatbubbleEllipsesOutline });
 
@@ -145,6 +195,26 @@ export class PortfolioDashboardComponent implements OnInit {
         this.displayValue.set(Math.round(current));
       }
     }, intervalMs);
+  }
+
+  arcPath(segment: ChartSegment): string {
+    const cx = 100, cy = 100, r = 80, innerR = 52;
+    const x1 = cx + r * Math.sin(segment.startAngle);
+    const y1 = cy - r * Math.cos(segment.startAngle);
+    const x2 = cx + r * Math.sin(segment.endAngle);
+    const y2 = cy - r * Math.cos(segment.endAngle);
+    const ix1 = cx + innerR * Math.sin(segment.startAngle);
+    const iy1 = cy - innerR * Math.cos(segment.startAngle);
+    const ix2 = cx + innerR * Math.sin(segment.endAngle);
+    const iy2 = cy - innerR * Math.cos(segment.endAngle);
+    const large = segment.endAngle - segment.startAngle > Math.PI ? 1 : 0;
+    return [
+      `M ${x1} ${y1}`,
+      `A ${r} ${r} 0 ${large} 1 ${x2} ${y2}`,
+      `L ${ix2} ${iy2}`,
+      `A ${innerR} ${innerR} 0 ${large} 0 ${ix1} ${iy1}`,
+      'Z',
+    ].join(' ');
   }
 
   formatCurrency(value: number): string {
