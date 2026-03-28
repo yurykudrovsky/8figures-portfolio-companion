@@ -7,7 +7,7 @@ description: Test authority — reads reviewer-approved output, writes and runs 
 # Current mode: QA-AFTER (tests verify working implementation)
 # Future mode: QA-FIRST (tests written before implementation)
 # Future: ORCHESTRATOR agent will invoke QA autonomously.
-# See design-docs/future-agents.md for TDD++ and ORCHESTRATOR roadmaps.
+# See design-docs/future-agents.md for ATDD/QA-FIRST and ORCHESTRATOR roadmaps.
 #
 # Current scope exclusions (documented decisions):
 # - No contract tests (Pact.io) — see future-agents.md

@@ -53,7 +53,24 @@ See tasks/README.md "Future Integration Roadmap" and
 ARCHITECTURE.md "Pipeline Evolution" for complete roadmap
 of Jira/GitHub/Monday integration.
 
-## QA-FIRST Mode (TDD++ Pipeline)
+## QA-FIRST Mode (ATDD Pipeline — Acceptance Test-Driven Development)
+
+### ATDD — Acceptance Test-Driven Development
+Industry standard methodology used in fintech and
+safety-critical software. Three-stage quality loop:
+1. Acceptance criteria written BEFORE design (SPECS agent)
+2. Failing acceptance tests written BEFORE code (QA-FIRST agent)
+3. Implementation proceeds until all tests pass (BUILDER)
+
+Also known as: Outside-In TDD, Double-Loop TDD,
+Specification by Example.
+Reference: https://en.wikipedia.org/wiki/Acceptance_test-driven_development
+
+Our implementation:
+SPECS → QA-FIRST → BUILDER → QA-VERIFY
+maps directly to ATDD cycle:
+Criteria → Red → Green → Refactor
+
 ### Current
 QA runs AFTER builder implements. Tests verify working code.
 
@@ -68,7 +85,7 @@ SCOUT → ARCHITECT → SPECS → QA-FIRST → BUILDER → REVIEWER → QA-VERIF
 
 ### Why Not Now
 Assessment timeline — 5-stage pipeline sufficient for demonstration.
-Full TDD++ appropriate for production fintech where financial
+Full ATDD (Acceptance Test-Driven Development) appropriate for production fintech where financial
 calculations require exhaustive test coverage before deployment.
 
 ### Implementation Path
@@ -136,3 +153,154 @@ Already compatible with Vitest test runner we use.
 - QA agent required to write property tests for all
   financial calculation functions
 - Estimated: 1 sprint
+
+## MCP Integration Roadmap
+
+Model Context Protocol (MCP) enables Claude Code to connect
+directly to external tools without middleware or custom scripts.
+Each MCP server below represents a native integration point
+for the pipeline.
+
+### Priority 1 — Immediate Value (first sprint after launch)
+
+**GitHub MCP**
+- Creates PRs automatically after QA approval
+- Reads PR comments → generates fix tasks
+- Replaces current manual gh pr create step
+- Impact: closes Gap 2 — manual PR creation
+
+**Atlassian MCP (Jira + Confluence)**
+- Reads Jira tickets directly into Claude context
+- Auto-generates task files from ticket description
+- Updates ticket status as pipeline progresses
+- Writes ARCHITECT output → Confluence page automatically
+- Impact: closes manual task creation + auto-documentation
+
+**Slack MCP**
+- Notifies team when pipeline completes
+- Posts REVIEWER report to engineering channel
+- Alerts on pipeline failures with context
+- Impact: team visibility into all pipeline runs
+
+### Priority 2 — Design & Knowledge (second sprint)
+
+**Figma MCP**
+- Reads design files directly into ARCHITECT context
+- ARCHITECT generates design docs from Figma specs
+- Eliminates design → task translation step entirely
+- Impact: design → code pipeline without manual handoff
+
+**Notion MCP**
+- Reads product specs and PRDs directly into pipeline
+- SPECS agent reads Notion → writes acceptance criteria
+- Pipeline updates Notion pages with implementation status
+- Impact: product decisions → pipeline specs automatically
+
+**Miro MCP**
+- Reads architecture diagrams directly into ARCHITECT
+- ARCHITECT references Miro boards for system design
+- Pipeline outputs update Miro boards automatically
+- Impact: visual architecture → code without translation loss
+
+**NotebookLM MCP (Google)**
+- Indexes all pipeline artifacts — audit reports, design docs,
+  review reports, qa reports — into a searchable knowledge base
+- SCOUT queries NotebookLM for historical findings
+  before starting new audit
+- ARCHITECT queries past design decisions before new designs
+- Engineering Director asks natural language questions about
+  entire project history
+- Example: "What issues has SCOUT found in chat.service.ts
+  across all pipeline runs?"
+- Impact: institutional memory across all pipeline runs —
+  pipeline learns from its own history
+
+### Priority 3 — Data & Product (third sprint)
+
+**PostgreSQL/Supabase MCP**
+- Replace mock portfolio data with real database
+- Claude Code queries and updates portfolio directly
+- Real user accounts and portfolio persistence
+- Impact: transforms mock app into production-ready
+
+**Anthropic API MCP**
+- Direct Claude API access for AI chat feature
+- Replaces current mock streaming implementation
+- Portfolio context injection into system prompt
+- Impact: real AI-powered financial advisor
+
+**Financial Data MCP (Polygon.io / Alpha Vantage)**
+- Real-time stock prices replace mock data
+- Portfolio values update in real time
+- AI advisor responds to actual market conditions
+- Impact: transforms demo into real financial tool
+- Critical for 8FIGURES product vision
+
+### Priority 4 — DevOps & Quality (fourth sprint)
+
+**Sentry MCP**
+- Reads production errors directly into Claude context
+- Auto-generates fix tasks from production errors
+- SCOUT agent reads Sentry → creates audit findings
+- Impact: production error → pipeline fix automatically
+
+**Datadog/Amplitude MCP**
+- Reads analytics and performance metrics
+- SCOUT monitors performance regressions automatically
+- Auto-creates optimization tasks from data
+- Impact: data-driven pipeline triggers
+
+**Linear MCP**
+- Modern alternative to Jira for engineering teams
+- Better API than Jira for programmatic access
+- Same ticket → task → PR → close flow
+- Impact: same as Atlassian MCP
+
+### Pipeline Evolution with MCP
+
+**Current (manual bridges):**
+You → task file → Claude Code → local files → manual PR
+
+**Near future (partial MCP):**
+GitHub MCP → auto PR
+Atlassian MCP → auto task files from Jira
+Slack MCP → auto notifications
+
+**Full vision (MCP-native pipeline):**
+Jira ticket created
+→ Atlassian MCP reads ticket
+→ Notion MCP reads PRD context
+→ Figma MCP reads design specs
+→ NotebookLM MCP checks historical findings
+→ Claude Code generates task file
+→ Pipeline executes autonomously
+→ GitHub MCP creates PR
+→ Confluence MCP documents decisions
+→ Slack MCP notifies team
+→ Jira MCP closes ticket
+
+Zero middleware. Zero manual steps.
+One human gate: Engineering Director approves merge.
+
+### Implementation Priority for 8FIGURES Specifically
+
+Given 8FIGURES is an AI-powered financial advisor
+at pre-Series A with a team of 8:
+
+1. Anthropic API MCP — real AI chat (most critical for product)
+2. Financial Data MCP — real market data (core product value)
+3. GitHub MCP — automated PRs (pipeline automation)
+4. Atlassian MCP — Jira + Confluence (team workflow)
+5. Notion MCP — product specs into pipeline
+6. Figma MCP — design → code pipeline
+7. Slack MCP — team notifications
+8. NotebookLM MCP — institutional pipeline memory
+9. Supabase MCP — real user data
+10. Sentry MCP — production error automation
+11. Miro MCP — architecture visualization
+12. Datadog/Amplitude MCP — analytics-driven tasks
+13. Linear MCP — alternative PM tool
+
+### Reference
+Claude Code MCP docs: https://docs.anthropic.com/en/docs/claude-code/mcp
+MCP server registry: https://github.com/modelcontextprotocol/servers

@@ -58,7 +58,7 @@ All pipeline runs produce artifacts committed to the repo:
 - Semi-automated PRs via gh CLI (1 day)
 - Jira/GitHub webhook integration (1 sprint)
 - ORCHESTRATOR agent for autonomous pipeline execution (1 sprint)
-- TDD++ with QA-FIRST red-green-refactor (1 sprint)
+- ATDD with QA-FIRST red-green-refactor (1 sprint)
 - Parallel worktree execution for concurrent pipelines (1 sprint)
 
 See [ARCHITECTURE.md](./ARCHITECTURE.md) "Pipeline Evolution" and

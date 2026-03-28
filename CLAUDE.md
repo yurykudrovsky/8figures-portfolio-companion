@@ -214,6 +214,13 @@ agents. See design-docs/future-agents.md for planned
 ORCHESTRATOR and SCOUT-UX agents that will automate handoffs
 and add UX audit capability.
 
+MCP Integration Roadmap: See design-docs/future-agents.md
+for 13 MCP servers that connect this pipeline to external
+tools natively — GitHub, Atlassian, Notion, Figma, Miro,
+NotebookLM, Slack, Supabase, Anthropic API, Financial Data,
+Sentry, Datadog, Linear. Full MCP-native pipeline vision
+documented with 8FIGURES-specific implementation order.
+
 # Docs-as-Code Principle
 Every pipeline decision is documented before execution.
 Task files (tasks/NNN-*.md) are the executable specs — they define

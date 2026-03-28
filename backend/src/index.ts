@@ -16,8 +16,10 @@ app.get('/api/health', (_req: Request, res: Response): void => {
 app.use('/api/portfolio', portfolioRoutes);
 app.use('/api/chat', chatRoutes);
 
-app.listen(PORT, () => {
-  process.stdout.write(`8Figures API running on http://localhost:${PORT}\n`);
-});
+if (require.main === module) {
+  app.listen(PORT, () => {
+    process.stdout.write(`8Figures API running on http://localhost:${PORT}\n`);
+  });
+}
 
 export default app;

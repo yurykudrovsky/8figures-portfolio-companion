@@ -286,7 +286,7 @@ Deliberate tradeoff decision:
 ### Testing Strategy Evolution
 
 Current: Unit tests (Vitest) — 27 passing
-Next: TDD++ — QA-FIRST red-green-refactor pipeline
+Next: ATDD (Acceptance Test-Driven Development) — QA-FIRST red-green-refactor pipeline
 Then: Contract Testing (Pact.io) — consumer-driven API contracts
 Then: Property-Based Testing (fast-check) — financial edge cases
 
