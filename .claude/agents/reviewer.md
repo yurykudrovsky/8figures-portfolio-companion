@@ -123,3 +123,42 @@ Use this structure:
 3. If the checklist item passes, check it. Do not leave items blank.
 4. A PASS result requires: build clean + all tests passing + all checklist items checked.
 5. When done, output: `REVIEWER COMPLETE — report written to review-reports/<filename>.md`
+
+---
+
+## Full-Stack Integration Checks
+
+For any task that claims API or backend integration, run these checks BEFORE writing the report. Failure on any of these is an automatic REVIEWER FAIL — do not proceed to PASS.
+
+### Mandatory grep checks
+
+```bash
+# 1. Confirm frontend service has HttpClient injected
+grep -rn "HttpClient\|inject(HttpClient)" frontend/src/app/features/*/services/*.ts
+
+# 2. Confirm frontend service calls a backend URL
+grep -rn "api/" frontend/src/app/features/*/services/*.ts
+
+# 3. Confirm chat service has no local mock methods (for AI chat tasks)
+grep -n "buildResponse\|private.*Response\|setInterval" \
+  frontend/src/app/features/chat/services/chat.service.ts
+```
+
+### Failure conditions — REVIEWER FAIL if:
+
+| Condition | Finding to report |
+|-----------|-------------------|
+| Task claims "real API integration" AND grep 1 returns empty | `chat.service.ts` has no HttpClient — frontend never calls backend |
+| Task claims "integrate" AND grep 2 returns empty | No `api/` URL found in frontend service — HTTP call missing |
+| Task claims "real AI chat" AND grep 3 returns results | `buildResponse` or `setInterval` mock still active in chat service — real API is bypassed |
+| Only backend files in git diff for a full-stack task | Frontend layer not implemented — integration gap |
+
+### How to report integration failures
+
+Add to the Violations table with severity CRITICAL:
+
+```
+| 1 | CRITICAL | frontend/src/.../chat.service.ts | — | Integration | Service has no HttpClient — frontend never calls backend POST /api/chat |
+```
+
+And set Recommendation to: `RETURN TO BUILDER — frontend service layer not implemented`

@@ -188,3 +188,63 @@ List any bugs the tests revealed in the implementation. These are NOT test failu
 2. No `any` types in test files — fixture objects must match their interfaces exactly.
 3. Every new service must have a `.spec.ts` covering at minimum: happy path, error path, and boundary conditions.
 4. When done, output: `QA COMPLETE — report written to qa-reports/<filename>.md`
+
+---
+
+## Device Verification for AI Features
+
+For any task involving AI API calls, SSE streaming, or real backend integration, unit tests alone are NOT sufficient for a SHIP recommendation. Run the following checks before writing the final report.
+
+### Mandatory device checks
+
+**1. Confirm backend responds with real API data**
+```bash
+curl -s -X POST http://localhost:3000/api/chat \
+  -H "Content-Type: application/json" \
+  -d '{"message":"What is my best performer?","context":{"portfolio":<paste portfolio object>,"messages":[]}}' \
+  --no-buffer | head -20
+```
+Assert: response starts with `data: {"char":` AND assembled text references a holding ticker (AAPL, NVDA, MSFT, BTC, ETH, VOO, TSLA, AMZN).
+
+**2. Confirm frontend service calls backend (not local mock)**
+```bash
+grep -n "HttpClient\|inject(HttpClient)\|api/chat" \
+  frontend/src/app/features/chat/services/chat.service.ts
+```
+Assert: at least one match. Zero matches → frontend is using local mock → HOLD.
+
+**3. Confirm no local mock methods shadow the real call**
+```bash
+grep -n "private buildResponse\|private.*Response\|setInterval" \
+  frontend/src/app/features/chat/services/chat.service.ts
+```
+Assert: zero matches (or matches are clearly dead code unreachable from `sendMessage()`).
+
+**4. iOS Simulator deployment**
+```bash
+cd frontend && npm run build && npx cap sync && \
+  npx cap run ios --target "E9E266F9-6987-425C-B745-BECD299DE9FC"
+```
+Assert: app launches, chat screen accepts input, response streams character-by-character, response text references actual portfolio holdings.
+
+### SHIP criteria for AI features
+
+All four checks must pass to issue Recommendation: SHIP.
+
+| Check | Pass condition |
+|-------|---------------|
+| curl response | Starts with `data: {"char":`, text contains a known ticker |
+| HttpClient grep | At least one match in chat service |
+| No mock grep | Zero matches (or confirmed dead code) |
+| Device test | Characters stream on iOS Simulator, portfolio data visible |
+
+### If device test cannot be run
+
+Flag explicitly in the QA report:
+
+```
+⚠ Device verification skipped — Engineering Director must verify on iOS Simulator before merge.
+Reason: [explain why device test was not run]
+```
+
+Never issue Recommendation: SHIP for an AI feature without either passing the device test or this explicit flag acknowledged by the Engineering Director.

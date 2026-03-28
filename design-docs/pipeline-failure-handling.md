@@ -63,6 +63,49 @@ Engineering Director can act on.
 - BUILDER reimplements from revised design
 - Document in pipeline-log.md: DESIGN CONFLICT → ARCHITECT REVISION
 
+### 7. Full-Stack Integration Gap
+**Trigger:** A task claims full-stack integration (e.g. "real API", "connect
+frontend to backend") but the frontend service has no `HttpClient` call —
+the feature works only at the backend layer while the frontend silently
+continues using its local mock.
+
+**Root cause:** Task decomposition described the feature as a backend change
+only. ARCHITECT designed only the backend. BUILDER implemented only the
+backend. REVIEWER did not run integration grep checks. The gap survived all
+gates because no agent was required to verify the frontend-to-backend
+connection.
+
+**Detection (REVIEWER mandatory check):**
+```bash
+grep -n "HttpClient\|inject(HttpClient)" \
+  frontend/src/app/features/*/services/*.ts
+# Zero results for a "real API integration" task → REVIEWER FAIL
+```
+
+**Prevention checklist — all three layers must be satisfied:**
+1. `tasks/TEMPLATE.md` Integration Boundary section filled in — lists every
+   frontend service AND backend route that needs to change
+2. SPECS writes AC-F1 (HttpClient grep) and AC-I2 (device end-to-end) for
+   every full-stack task — missing these ACs is a SPECS failure
+3. REVIEWER runs integration grep checks before issuing any PASS verdict —
+   empty HttpClient grep on a "real API" task is automatic FAIL
+
+**Recovery:**
+- REVIEWER issues FAIL with finding: "Frontend service has no HttpClient —
+  integration gap: frontend never calls backend"
+- Return to ARCHITECT to extend design to include frontend service changes
+- BUILDER implements frontend service HTTP layer
+- REVIEWER re-runs integration greps to confirm fix
+- QA-VERIFY runs device test (curl + iOS Simulator) to confirm end-to-end
+
+**Real incident:** Task 013 (Claude API Integration, 2026-03-28) wired the
+real Anthropic API into the backend correctly but left `ChatService.sendMessage()`
+calling a local `buildResponse()` method — zero HTTP calls made. The gap
+was caught in post-merge diagnosis, not by the pipeline. The three
+prevention layers above close this gap permanently.
+
+**Document in pipeline-log.md:** `INTEGRATION GAP → ARCHITECT REVISION → BUILDER RETRY`
+
 ## Recovery Principles
 1. Always rollback to last passing commit before retry
 2. Never accumulate broken state across retry cycles
