@@ -153,3 +153,39 @@ Already compatible with Vitest test runner we use.
 - QA agent required to write property tests for all
   financial calculation functions
 - Estimated: 1 sprint
+
+## MCP Integration Roadmap
+
+### Priority 1 — Execution & Automation
+(Reserved — ORCHESTRATOR agent, gh CLI, Jira/GitHub webhooks)
+
+### Priority 2 — Design & Knowledge
+
+#### NotebookLM MCP (Google)
+- Indexes all pipeline artifacts — audit reports, design docs,
+  review reports, qa reports — into a searchable knowledge base
+- SCOUT agent queries NotebookLM for historical findings
+  before starting new audit
+- ARCHITECT queries past design decisions before new designs
+- Engineering Director asks natural language questions about
+  entire project history
+- Example: "What issues has SCOUT found in chat.service.ts
+  across all pipeline runs?"
+- Impact: institutional memory across all pipeline runs —
+  pipeline learns from its own history
+
+## Implementation Priority List
+
+1. ORCHESTRATOR agent — autonomous pipeline execution
+2. Semi-automated PRs via gh CLI
+3. SCOUT-UX agent — mobile UX audit capability
+4. SPECS agent — acceptance criteria before code
+5. QA-FIRST / ATDD — failing tests before implementation
+6. Jira/GitHub webhook integration
+7. Parallel worktree execution
+8. Contract Testing (Pact.io)
+9. Property-Based Testing (fast-check)
+10. Auto-documentation (update-docs.sh)
+11. ORCHESTRATOR + PM Integration (Monday.com/Linear)
+12. Visual Regression Testing (Percy/Chromatic)
+13. NotebookLM MCP — institutional pipeline memory
