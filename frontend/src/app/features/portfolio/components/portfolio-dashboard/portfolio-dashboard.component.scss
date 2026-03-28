@@ -1,14 +1,13 @@
-// ── Summary Card ─────────────────────────────────────────────
-.summary-card {
-  background: var(--ion-color-primary);
+// ── Summary Hero ──────────────────────────────────────────────
+.summary-hero {
+  background: var(--app-card);
+  border: 1px solid var(--app-card-border);
   border-radius: 16px;
-  padding: 24px 20px;
+  padding: 28px 24px 24px;
   text-align: center;
   margin-bottom: 24px;
-  color: var(--ion-color-primary-contrast);
 
   &.skeleton-summary {
-    background: var(--ion-color-step-100);
     min-height: 120px;
     display: flex;
     flex-direction: column;
@@ -18,26 +17,29 @@
   }
 }
 
-.summary-label {
-  font-size: 0.8rem;
+.hero-label {
+  font-size: 0.75rem;
+  font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
-  opacity: 0.8;
-  margin: 0 0 4px;
+  letter-spacing: 0.1em;
+  color: var(--app-text-secondary);
+  margin: 0 0 8px;
 }
 
-.total-value {
-  font-size: 2.4rem;
+.hero-value {
+  font-size: 2.8rem;
   font-weight: 700;
-  margin: 4px 0 8px;
   letter-spacing: -0.02em;
+  color: var(--app-text-primary);
+  font-variant-numeric: tabular-nums;
+  margin: 0 0 10px;
 }
 
-.daily-change {
-  display: flex;
+.hero-change {
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 4px;
+  gap: 6px;
   font-size: 0.95rem;
   font-weight: 500;
   margin: 0;
@@ -47,11 +49,11 @@
   }
 
   &.gain {
-    color: #4ade80;
+    color: var(--app-accent);
   }
 
   &.loss {
-    color: #f87171;
+    color: var(--app-loss);
   }
 }
 
@@ -72,7 +74,7 @@
 .section-heading {
   font-size: 1rem;
   font-weight: 600;
-  color: var(--ion-color-medium);
+  color: var(--app-text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.06em;
   margin: 0 0 8px 4px;
@@ -80,12 +82,74 @@
 
 // ── Holding Card ──────────────────────────────────────────────
 .holding-card {
-  margin: 0 0 12px;
+  margin: 0 0 10px;
   border-radius: 12px;
+  border: 1px solid var(--app-card-border);
+  background: var(--app-card);
+  overflow: hidden;
+  position: relative;
+  opacity: 0;
+  animation: card-fade-in 300ms ease-out forwards;
 
   ion-card-header {
     padding-bottom: 0;
   }
+}
+
+// ── Gain/loss left-border accent bar ──────────────────────────
+.holding-accent-bar {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+
+  &.bar-gain {
+    background: var(--app-accent);
+  }
+
+  &.bar-loss {
+    background: var(--app-loss);
+  }
+}
+
+// ── Gain/loss pill badge ──────────────────────────────────────
+.gain-loss-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+
+  &.pill-gain {
+    color: var(--app-accent);
+    background: var(--app-accent-10);
+  }
+
+  &.pill-loss {
+    color: var(--app-loss);
+    background: var(--app-loss-10);
+  }
+}
+
+// ── Holding header right ──────────────────────────────────────
+.holding-header-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.asset-type-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--app-text-secondary);
 }
 
 .holding-header {
@@ -135,11 +199,35 @@
 
 // ── Gain / Loss colors ────────────────────────────────────────
 .gain {
-  color: var(--ion-color-success);
+  color: var(--app-accent);
 }
 
 .loss {
-  color: var(--ion-color-danger);
+  color: var(--app-loss);
+}
+
+// ── Pull-to-refresh colour ────────────────────────────────────
+ion-refresher {
+  --ion-color-primary: var(--app-accent);
+}
+
+// ── Stagger animation ─────────────────────────────────────────
+@keyframes card-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Stagger: 50 ms per card, up to 10 cards */
+@for $i from 1 through 10 {
+  .holding-card:nth-child(#{$i}) {
+    animation-delay: #{($i - 1) * 50}ms;
+  }
 }
 
 // ── Error State ───────────────────────────────────────────────

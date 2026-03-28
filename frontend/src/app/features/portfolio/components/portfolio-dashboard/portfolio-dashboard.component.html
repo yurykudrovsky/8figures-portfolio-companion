@@ -1,5 +1,5 @@
 <ion-header>
-  <ion-toolbar color="primary">
+  <ion-toolbar>
     <ion-title>
       <ion-icon name="wallet-outline"></ion-icon>
       My Portfolio
@@ -20,7 +20,7 @@
 
   <!-- ── Loading State ─────────────────────────────────────── -->
   @if (loading()) {
-    <div class="summary-card skeleton-summary">
+    <div class="summary-hero skeleton-summary">
       <ion-skeleton-text animated class="skeleton-value"></ion-skeleton-text>
       <ion-skeleton-text animated class="skeleton-change"></ion-skeleton-text>
     </div>
@@ -55,11 +55,11 @@
   <!-- ── Data State ─────────────────────────────────────────── -->
   @if (!loading() && !error() && portfolio()) {
     @let p = portfolio()!;
-    <div class="summary-card">
-      <p class="summary-label">Total Portfolio Value</p>
-      <h1 class="total-value">{{ formatCurrency(p.totalValue) }}</h1>
+    <div class="summary-hero">
+      <p class="hero-label">Total Portfolio Value</p>
+      <h1 class="hero-value">{{ formatCurrency(displayValue()) }}</h1>
       <p
-        class="daily-change"
+        class="hero-change"
         [ngClass]="p.dailyChange >= 0 ? 'gain' : 'loss'"
       >
         <ion-icon
@@ -80,15 +80,19 @@
 
     @for (holding of p.holdings; track holding.id) {
       <ion-card class="holding-card">
+        <div class="holding-accent-bar" [ngClass]="holding.gainLoss >= 0 ? 'bar-gain' : 'bar-loss'"></div>
         <ion-card-header>
           <div class="holding-header">
             <div class="holding-title-group">
               <ion-card-title>{{ holding.ticker }}</ion-card-title>
               <ion-card-subtitle>{{ holding.name }}</ion-card-subtitle>
             </div>
-            <ion-badge [color]="holding.assetType === 'crypto' ? 'warning' : holding.assetType === 'etf' ? 'tertiary' : 'medium'">
-              {{ assetTypeLabel(holding.assetType) }}
-            </ion-badge>
+            <div class="holding-header-right">
+              <span class="asset-type-label">{{ assetTypeLabel(holding.assetType) }}</span>
+              <span class="gain-loss-pill" [ngClass]="holding.gainLoss >= 0 ? 'pill-gain' : 'pill-loss'">
+                {{ formatPercent(holding.gainLossPercent) }}
+              </span>
+            </div>
           </div>
         </ion-card-header>
 

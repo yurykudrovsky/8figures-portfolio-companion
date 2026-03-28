@@ -38,3 +38,8 @@ Thumbs.db
 
 # TypeScript cache
 *.tsbuildinfo
+inbox/*
+!inbox/README.md
+!inbox/processed/
+inbox/processed/*
+!inbox/processed/.gitkeep

@@ -5,6 +5,42 @@
  * https://ionicframework.com/docs/theming/dark-mode
  */
 
-/* @import "@ionic/angular/css/palettes/dark.always.css"; */
+/* @import "@ionic/angular/css/palettes/dark.system.css"; */
 /* @import "@ionic/angular/css/palettes/dark.class.css"; */
-@import '@ionic/angular/css/palettes/dark.system.css';
+@import '@ionic/angular/css/palettes/dark.always.css';
+
+/* ── 8FIGURES design tokens ───────────────────────────────── */
+:root {
+  --app-bg:             #0a0a0f;
+  --app-card:           #0d1117;
+  --app-card-border:    #1a2332;
+  --app-accent:         #00d4aa;
+  --app-loss:           #ff4757;
+  --app-text-primary:   #e8eaf0;
+  --app-text-secondary: #8892a4;
+  --app-accent-10:      rgba(0, 212, 170, 0.10);
+  --app-loss-10:        rgba(255, 71, 87, 0.10);
+}
+
+/* ── Global Ionic surface overrides ───────────────────────── */
+:root {
+  --ion-background-color:        var(--app-bg);
+  --ion-background-color-rgb:    10, 10, 15;
+
+  --ion-text-color:              var(--app-text-primary);
+  --ion-text-color-rgb:          232, 234, 240;
+
+  --ion-toolbar-background:      var(--app-card);
+  --ion-toolbar-color:           var(--app-text-primary);
+  --ion-toolbar-border-color:    var(--app-card-border);
+
+  --ion-card-background:         var(--app-card);
+
+  --ion-item-background:         transparent;
+  --ion-item-border-color:       var(--app-card-border);
+
+  --ion-color-step-50:           #0f1419;
+  --ion-color-step-100:          #141b24;
+  --ion-color-step-150:          #1a2332;
+  --ion-color-step-200:          #1f2b3a;
+}
