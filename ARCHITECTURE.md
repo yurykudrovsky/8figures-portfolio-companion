@@ -258,6 +258,24 @@ Current manual convention (enforced by scripts/run-agent.sh):
 - Human creates PR after QA approval; merge to main = deployment gate
 - Future: ORCHESTRATOR creates branches and PRs automatically
 
+### Parallel Execution via Git Worktrees
+Current pipeline runs one branch at a time sequentially.
+Future parallel execution uses git worktrees:
+
+```bash
+git worktree add ../8figures-pipeline-002 pipeline/002-ui-bloomberg
+git worktree add ../8figures-pipeline-003 pipeline/003-api-integration
+```
+
+This enables simultaneous pipeline runs:
+- Worktree 1: pipeline/001 — code quality fixes
+- Worktree 2: pipeline/002 — UI transformation
+- Worktree 3: pipeline/003 — API integration
+
+Each worktree has independent filesystem — no branch conflicts.
+ORCHESTRATOR manages all worktrees from single session.
+This is exactly the "5-10 concurrent sessions" pattern.
+
 ### Why Not Implemented Now
 Deliberate tradeoff decision:
 - Auto-PR creation adds gh CLI dependency and auth complexity

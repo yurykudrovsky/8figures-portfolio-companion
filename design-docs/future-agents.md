@@ -16,6 +16,14 @@ escalates to human only when blocked.
 - Debugging multi-agent failures is complex
 - Human-in-the-loop at every gate is deliberate Level 5 practice
 
+### Parallel Worktree Management
+ORCHESTRATOR will manage multiple worktrees simultaneously:
+- Creates worktree per pipeline run automatically
+- Spawns specialized agents per worktree
+- Monitors all worktrees for completion
+- Coordinates merge order back to main
+- Enables true 5-10 concurrent session workflow
+
 ### Implementation Path
 - Define orchestrator.md with pipeline state machine
 - Use TaskCreate/TaskGet/TaskUpdate tools for state tracking

@@ -21,6 +21,14 @@ All pipeline execution branches follow this naming convention:
 - See CLAUDE.md "Pipeline Git Rules" and ARCHITECTURE.md "Pipeline Evolution" for full protocol
 - Future: ORCHESTRATOR agent will create branches and PRs automatically
 
+### Parallel Pipeline Runs (Future)
+Multiple pipeline branches can run simultaneously via worktrees:
+- Each pipeline/NNN branch gets its own worktree directory
+- ORCHESTRATOR spawns agents across worktrees in parallel
+- Human gates apply per worktree independently
+- Merge order: sequential, lowest NNN first
+See: ARCHITECTURE.md "Parallel Execution via Git Worktrees"
+
 ## Failure Protocol
 When any pipeline stage fails, follow design-docs/pipeline-failure-handling.md:
 - Build failure → ARCHITECT retry (BUILDER stops immediately)
