@@ -156,15 +156,56 @@ Already compatible with Vitest test runner we use.
 
 ## MCP Integration Roadmap
 
-### Priority 1 — Execution & Automation
-(Reserved — ORCHESTRATOR agent, gh CLI, Jira/GitHub webhooks)
+Model Context Protocol (MCP) enables Claude Code to connect
+directly to external tools without middleware or custom scripts.
+Each MCP server below represents a native integration point
+for the pipeline.
 
-### Priority 2 — Design & Knowledge
+### Priority 1 — Immediate Value (first sprint after launch)
 
-#### NotebookLM MCP (Google)
+**GitHub MCP**
+- Creates PRs automatically after QA approval
+- Reads PR comments → generates fix tasks
+- Replaces current manual gh pr create step
+- Impact: closes Gap 2 — manual PR creation
+
+**Atlassian MCP (Jira + Confluence)**
+- Reads Jira tickets directly into Claude context
+- Auto-generates task files from ticket description
+- Updates ticket status as pipeline progresses
+- Writes ARCHITECT output → Confluence page automatically
+- Impact: closes manual task creation + auto-documentation
+
+**Slack MCP**
+- Notifies team when pipeline completes
+- Posts REVIEWER report to engineering channel
+- Alerts on pipeline failures with context
+- Impact: team visibility into all pipeline runs
+
+### Priority 2 — Design & Knowledge (second sprint)
+
+**Figma MCP**
+- Reads design files directly into ARCHITECT context
+- ARCHITECT generates design docs from Figma specs
+- Eliminates design → task translation step entirely
+- Impact: design → code pipeline without manual handoff
+
+**Notion MCP**
+- Reads product specs and PRDs directly into pipeline
+- SPECS agent reads Notion → writes acceptance criteria
+- Pipeline updates Notion pages with implementation status
+- Impact: product decisions → pipeline specs automatically
+
+**Miro MCP**
+- Reads architecture diagrams directly into ARCHITECT
+- ARCHITECT references Miro boards for system design
+- Pipeline outputs update Miro boards automatically
+- Impact: visual architecture → code without translation loss
+
+**NotebookLM MCP (Google)**
 - Indexes all pipeline artifacts — audit reports, design docs,
   review reports, qa reports — into a searchable knowledge base
-- SCOUT agent queries NotebookLM for historical findings
+- SCOUT queries NotebookLM for historical findings
   before starting new audit
 - ARCHITECT queries past design decisions before new designs
 - Engineering Director asks natural language questions about
@@ -174,18 +215,92 @@ Already compatible with Vitest test runner we use.
 - Impact: institutional memory across all pipeline runs —
   pipeline learns from its own history
 
-## Implementation Priority List
+### Priority 3 — Data & Product (third sprint)
 
-1. ORCHESTRATOR agent — autonomous pipeline execution
-2. Semi-automated PRs via gh CLI
-3. SCOUT-UX agent — mobile UX audit capability
-4. SPECS agent — acceptance criteria before code
-5. QA-FIRST / ATDD — failing tests before implementation
-6. Jira/GitHub webhook integration
-7. Parallel worktree execution
-8. Contract Testing (Pact.io)
-9. Property-Based Testing (fast-check)
-10. Auto-documentation (update-docs.sh)
-11. ORCHESTRATOR + PM Integration (Monday.com/Linear)
-12. Visual Regression Testing (Percy/Chromatic)
-13. NotebookLM MCP — institutional pipeline memory
+**PostgreSQL/Supabase MCP**
+- Replace mock portfolio data with real database
+- Claude Code queries and updates portfolio directly
+- Real user accounts and portfolio persistence
+- Impact: transforms mock app into production-ready
+
+**Anthropic API MCP**
+- Direct Claude API access for AI chat feature
+- Replaces current mock streaming implementation
+- Portfolio context injection into system prompt
+- Impact: real AI-powered financial advisor
+
+**Financial Data MCP (Polygon.io / Alpha Vantage)**
+- Real-time stock prices replace mock data
+- Portfolio values update in real time
+- AI advisor responds to actual market conditions
+- Impact: transforms demo into real financial tool
+- Critical for 8FIGURES product vision
+
+### Priority 4 — DevOps & Quality (fourth sprint)
+
+**Sentry MCP**
+- Reads production errors directly into Claude context
+- Auto-generates fix tasks from production errors
+- SCOUT agent reads Sentry → creates audit findings
+- Impact: production error → pipeline fix automatically
+
+**Datadog/Amplitude MCP**
+- Reads analytics and performance metrics
+- SCOUT monitors performance regressions automatically
+- Auto-creates optimization tasks from data
+- Impact: data-driven pipeline triggers
+
+**Linear MCP**
+- Modern alternative to Jira for engineering teams
+- Better API than Jira for programmatic access
+- Same ticket → task → PR → close flow
+- Impact: same as Atlassian MCP
+
+### Pipeline Evolution with MCP
+
+**Current (manual bridges):**
+You → task file → Claude Code → local files → manual PR
+
+**Near future (partial MCP):**
+GitHub MCP → auto PR
+Atlassian MCP → auto task files from Jira
+Slack MCP → auto notifications
+
+**Full vision (MCP-native pipeline):**
+Jira ticket created
+→ Atlassian MCP reads ticket
+→ Notion MCP reads PRD context
+→ Figma MCP reads design specs
+→ NotebookLM MCP checks historical findings
+→ Claude Code generates task file
+→ Pipeline executes autonomously
+→ GitHub MCP creates PR
+→ Confluence MCP documents decisions
+→ Slack MCP notifies team
+→ Jira MCP closes ticket
+
+Zero middleware. Zero manual steps.
+One human gate: Engineering Director approves merge.
+
+### Implementation Priority for 8FIGURES Specifically
+
+Given 8FIGURES is an AI-powered financial advisor
+at pre-Series A with a team of 8:
+
+1. Anthropic API MCP — real AI chat (most critical for product)
+2. Financial Data MCP — real market data (core product value)
+3. GitHub MCP — automated PRs (pipeline automation)
+4. Atlassian MCP — Jira + Confluence (team workflow)
+5. Notion MCP — product specs into pipeline
+6. Figma MCP — design → code pipeline
+7. Slack MCP — team notifications
+8. NotebookLM MCP — institutional pipeline memory
+9. Supabase MCP — real user data
+10. Sentry MCP — production error automation
+11. Miro MCP — architecture visualization
+12. Datadog/Amplitude MCP — analytics-driven tasks
+13. Linear MCP — alternative PM tool
+
+### Reference
+Claude Code MCP docs: https://docs.anthropic.com/en/docs/claude-code/mcp
+MCP server registry: https://github.com/modelcontextprotocol/servers
