@@ -3,6 +3,13 @@
 Each file defines a precise, reproducible agent task.
 Tasks are executed in order with human gates between each.
 
+## Stage 0 — INTAKE (Optional)
+For requirement-driven development, run INTAKE first:
+- Place documents in inbox/
+- Run INTAKE agent
+- INTAKE generates task files automatically
+- Then execute generated tasks through normal pipeline
+
 ## Pipeline Run Log
 | Run | Date | Stages | Result |
 |-----|------|--------|--------|
