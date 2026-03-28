@@ -13,6 +13,59 @@ A mobile-first AI portfolio companion built with Angular 21, Ionic 8, and Capaci
 
 ---
 
+## AI Development Pipeline
+
+This project was built using a Level 5 multi-agent AI pipeline
+powered by Claude Code. The pipeline is as much a deliverable
+as the application itself.
+
+### Pipeline Architecture
+5 specialist agents with human gates at every handoff:
+
+| Agent | Role | Output |
+|---|---|---|
+| SCOUT | Read-only auditor — finds issues, never fixes | audit-reports/ |
+| ARCHITECT | Design authority — designs fixes, never implements | design-docs/ |
+| BUILDER | Implementation only — follows design exactly | source code |
+| REVIEWER | Quality gate — verifies against CLAUDE.md rules | review-reports/ |
+| QA | Test authority — writes tests, never fixes impl | qa-reports/ |
+
+### How to Run the Pipeline
+Every feature follows this workflow:
+
+1. Create task file in `tasks/` directory
+2. Execute: `"Execute task from tasks/NNN-task-name.md"`
+3. Review each agent output at human gate
+4. Approve or reject before next stage
+5. Merge PR after QA passes
+
+### Pipeline Evidence
+All pipeline runs produce artifacts committed to the repo:
+- `audit-reports/` — SCOUT findings with CONFIRMED/FIXED/NEW status
+- `design-docs/` — ARCHITECT designs before any code is written
+- `review-reports/` — REVIEWER verdicts with exact grep evidence
+- `qa-reports/` — QA results with test counts
+- `logs/agent-sessions/` — timestamped session logs
+
+### Pipeline Configuration
+- `CLAUDE.md` — project standards encoded before first line of code
+- `.claude/agents/` — 5 specialist agent context files
+- `.claude/commands/` — 6 reusable skills
+- `tasks/` — structured task specs (reproducible, version controlled)
+- `scripts/run-agent.sh` — agent launcher with branch safety check
+
+### Future Evolution
+- Semi-automated PRs via gh CLI (1 day)
+- Jira/GitHub webhook integration (1 sprint)
+- ORCHESTRATOR agent for autonomous pipeline execution (1 sprint)
+- TDD++ with QA-FIRST red-green-refactor (1 sprint)
+- Parallel worktree execution for concurrent pipelines (1 sprint)
+
+See [ARCHITECTURE.md](./ARCHITECTURE.md) "Pipeline Evolution" and
+[design-docs/future-agents.md](./design-docs/future-agents.md) for full roadmap.
+
+---
+
 ## Prerequisites
 
 | Tool | Version | Notes |
