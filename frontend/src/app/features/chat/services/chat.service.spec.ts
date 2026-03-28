@@ -1,6 +1,23 @@
 import { vi } from 'vitest';
+import { TestBed } from '@angular/core/testing';
+import { provideHttpClient } from '@angular/common/http';
+import {
+  HttpTestingController,
+  provideHttpClientTesting,
+} from '@angular/common/http/testing';
 import { ChatService } from './chat.service';
 import { Portfolio } from '../../../core/models/portfolio.model';
+import { ChatMessage } from '../models/chat.model';
+
+// ── Capacitor mock — hoisted by Vitest ───────────────────────
+vi.mock('@capacitor/core', () => ({
+  Capacitor: {
+    isNativePlatform: vi.fn(),
+    getPlatform: vi.fn(),
+  },
+}));
+
+import { Capacitor } from '@capacitor/core';
 
 // ── Fixture ───────────────────────────────────────────────────
 const mockPortfolio: Portfolio = {
@@ -49,26 +66,31 @@ const mockPortfolio: Portfolio = {
   ],
 };
 
-// ── Helper ────────────────────────────────────────────────────
-function collectStream(service: ChatService, message: string): string {
-  const chars: string[] = [];
-  service.sendMessage(message, mockPortfolio, []).subscribe({
-    next: (c) => chars.push(c),
-  });
-  vi.runAllTimers();
-  return chars.join('');
-}
-
 // ── Tests ─────────────────────────────────────────────────────
 describe('ChatService', () => {
   let service: ChatService;
+  let httpMock: HttpTestingController;
 
   beforeEach(() => {
     vi.useFakeTimers();
-    service = new ChatService();
+
+    vi.mocked(Capacitor.isNativePlatform).mockReturnValue(false);
+    vi.mocked(Capacitor.getPlatform).mockReturnValue('web');
+
+    TestBed.configureTestingModule({
+      providers: [
+        ChatService,
+        provideHttpClient(),
+        provideHttpClientTesting(),
+      ],
+    });
+
+    service = TestBed.inject(ChatService);
+    httpMock = TestBed.inject(HttpTestingController);
   });
 
   afterEach(() => {
+    httpMock.verify();
     vi.useRealTimers();
   });
 
@@ -121,10 +143,6 @@ describe('ChatService', () => {
     });
 
     // ── STREAMING_INTERVAL_MS behavioural tests ────────────────
-    // These three tests verify that the 15ms interval constant governs
-    // emission timing.  The outer beforeEach/afterEach already calls
-    // vi.useFakeTimers() / vi.useRealTimers() so no per-test setup is needed.
-
     it('STREAMING_INTERVAL_MS: first character emits after exactly 15ms, not before', () => {
       const chars: string[] = [];
       service.streamResponse('hello').subscribe({ next: (c) => chars.push(c) });
@@ -139,8 +157,6 @@ describe('ChatService', () => {
     });
 
     it('STREAMING_INTERVAL_MS: no emission before 15ms for single-character input', () => {
-      // Guards against a hypothetical regression where the interval is set to 0
-      // or an immediate emission is added before the interval fires.
       const chars: string[] = [];
       service.streamResponse('x').subscribe({ next: (c) => chars.push(c) });
 
@@ -149,15 +165,6 @@ describe('ChatService', () => {
     });
 
     it('STREAMING_INTERVAL_MS: stream completes on tick N+1 (at (N+1)*15ms) for length-N string', () => {
-      // Implementation emits char[i] on tick i+1, then on tick N+1 (when
-      // index === text.length) it calls clearInterval and observer.complete().
-      // For 'ab' (N=2): emit 'a' at 15ms, emit 'b' at 30ms, complete at 45ms.
-      //
-      // Note: the task spec suggested done===true at 30ms for N=2, but the
-      // setInterval implementation requires one additional tick to detect
-      // exhaustion and call observer.complete(). The existing suite test
-      // "completes after all characters are emitted" already validates 45ms
-      // for 'AB'. This test follows the same correct model.
       const chars: string[] = [];
       let done = false;
 
@@ -175,83 +182,118 @@ describe('ChatService', () => {
       vi.advanceTimersByTime(15);
       expect(done).toBe(true);
     });
-  });
 
-  // ── Response routing ───────────────────────────────────────
-  describe('sendMessage() — response routing', () => {
-    it('routes portfolio performance questions', () => {
-      const result = collectStream(service, 'How is my portfolio doing?');
-      expect(result).toContain('holdings');
-      expect(result).toContain('green');
-      expect(result).toContain('red');
+    it('emits all characters and completes for a multi-word string', () => {
+      const text = 'Hello World';
+      const chars: string[] = [];
+      service.streamResponse(text).subscribe({ next: (c) => chars.push(c) });
+      vi.runAllTimers();
+      expect(chars.join('')).toBe(text);
     });
 
-    it('routes best performer questions', () => {
-      const result = collectStream(service, 'What is my best performer?');
-      // NVDA has the highest gainLossPercent (125%); BTC is second (50%)
-      expect(result).toContain('NVDA');
-      expect(result).toContain('BTC'); // second-best
-    });
-
-    it('routes worst performer questions', () => {
-      const result = collectStream(service, 'What is my worst performer?');
-      // TSLA has the lowest gainLossPercent (-50%)
-      expect(result).toContain('TSLA');
-    });
-
-    it('routes rebalancing questions', () => {
-      const result = collectStream(service, 'Should I rebalance my portfolio?');
-      expect(result).toContain('%');
-      expect(result).toContain('ETF');
-    });
-
-    it('routes crypto exposure questions', () => {
-      const result = collectStream(service, 'What is my crypto exposure?');
-      expect(result).toContain('BTC');
-      expect(result).toContain('ETH');
-    });
-
-    it('uses fallback for unrecognised questions', () => {
-      const result = collectStream(service, 'Tell me about the weather');
-      // Fallback references largest holding (BTC at $60,000)
-      expect(result).toContain('BTC');
-      expect(result).toContain('6 positions');
+    it('each emission is exactly one character', () => {
+      const chars: string[] = [];
+      service.streamResponse('abc').subscribe({ next: (c) => chars.push(c) });
+      vi.runAllTimers();
+      chars.forEach((c) => expect(c).toHaveLength(1));
     });
   });
 
-  // ── Response content accuracy ──────────────────────────────
-  describe('sendMessage() — content accuracy', () => {
-    it('portfolio summary references the daily direction', () => {
-      // dailyChange is positive (800), so the response says "up"
-      const result = collectStream(service, 'How is my portfolio overall?');
-      expect(result).toContain('up');
+  // ── sendMessage() — HTTP layer ─────────────────────────────
+  describe('sendMessage() — HTTP layer', () => {
+    it('makes POST to /api/chat', () => {
+      const chars: string[] = [];
+      service.sendMessage('test question', mockPortfolio, []).subscribe({
+        next: (c) => chars.push(c),
+      });
+
+      const req = httpMock.expectOne('http://localhost:3000/api/chat');
+      expect(req.request.method).toBe('POST');
+      req.flush('data: {"char":"H"}\n\ndata: {"done":true}\n\n');
+      vi.runAllTimers();
     });
 
-    it('portfolio summary mentions correct holding count', () => {
-      const result = collectStream(service, 'overall performance');
-      expect(result).toContain('6 holdings');
+    it('request body contains message and portfolio context', () => {
+      service.sendMessage('test question', mockPortfolio, []).subscribe();
+
+      const req = httpMock.expectOne('http://localhost:3000/api/chat');
+      expect(req.request.body.message).toBe('test question');
+      expect(req.request.body.context.portfolio.id).toBe('p1');
+      req.flush('data: {"done":true}\n\n');
+      vi.runAllTimers();
     });
 
-    it('best performer response includes portfolio weight', () => {
-      const result = collectStream(service, 'top performer');
-      expect(result).toContain('%'); // weight percentage included
+    it('request body includes message history', () => {
+      const history: ChatMessage[] = [
+        { id: 'm1', role: 'user', content: 'hello', timestamp: new Date() },
+        { id: 'm2', role: 'assistant', content: 'hi there', timestamp: new Date() },
+      ];
+
+      service.sendMessage('follow-up question', mockPortfolio, history).subscribe();
+
+      const req = httpMock.expectOne('http://localhost:3000/api/chat');
+      expect(req.request.body.context.messages).toHaveLength(2);
+      expect(req.request.body.context.messages).toEqual(history);
+      req.flush('data: {"done":true}\n\n');
+      vi.runAllTimers();
     });
 
-    it('worst performer response suggests tax-loss harvesting', () => {
-      const result = collectStream(service, 'biggest loser');
-      expect(result).toContain('tax-loss');
+    it('parses SSE body and streams chars', () => {
+      const chars: string[] = [];
+      service.sendMessage('test', mockPortfolio, []).subscribe({
+        next: (c) => chars.push(c),
+      });
+
+      const req = httpMock.expectOne('http://localhost:3000/api/chat');
+      req.flush('data: {"char":"H"}\n\ndata: {"char":"i"}\n\ndata: {"done":true}\n\n');
+      vi.runAllTimers();
+
+      expect(chars.join('')).toBe('Hi');
     });
 
-    it('crypto response flags high exposure when above 20%', () => {
-      // BTC+ETH = $80,000 out of $97,500 = ~82% — above 20% threshold
-      const result = collectStream(service, 'crypto');
-      expect(result).toContain('significant portion');
+    it('ignores done frame — no extra character', () => {
+      const chars: string[] = [];
+      service.sendMessage('test', mockPortfolio, []).subscribe({
+        next: (c) => chars.push(c),
+      });
+
+      const req = httpMock.expectOne('http://localhost:3000/api/chat');
+      req.flush('data: {"done":true}\n\n');
+      vi.runAllTimers();
+
+      expect(chars.join('')).toBe('');
     });
 
-    it('rebalance response mentions underwater positions', () => {
-      // TSLA and ETH are losers
-      const result = collectStream(service, 'diversification');
-      expect(result).toContain('underwater');
+    it('uses 10.0.2.2 on Android native', () => {
+      vi.mocked(Capacitor.isNativePlatform).mockReturnValue(true);
+      vi.mocked(Capacitor.getPlatform).mockReturnValue('android');
+
+      service.sendMessage('test', mockPortfolio, []).subscribe();
+
+      const req = httpMock.expectOne('http://10.0.2.2:3000/api/chat');
+      expect(req.request.method).toBe('POST');
+      req.flush('data: {"done":true}\n\n');
+      vi.runAllTimers();
+    });
+
+    it('HTTP error triggers fallback — completes without error', () => {
+      const chars: string[] = [];
+      let errorCaught = false;
+      let completed = false;
+
+      service.sendMessage('test', mockPortfolio, []).subscribe({
+        next: (c) => chars.push(c),
+        error: () => (errorCaught = true),
+        complete: () => (completed = true),
+      });
+
+      const req = httpMock.expectOne('http://localhost:3000/api/chat');
+      req.flush('Server error', { status: 500, statusText: 'Internal Server Error' });
+      vi.runAllTimers();
+
+      expect(errorCaught).toBe(false);
+      expect(completed).toBe(true);
+      expect(chars.join('')).toContain('trouble connecting');
     });
   });
 });
