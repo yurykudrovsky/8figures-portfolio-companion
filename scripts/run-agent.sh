@@ -9,8 +9,9 @@ LOG_DIR="${REPO_ROOT}/logs/agent-sessions"
 
 # Branch safety check
 # NOTE: Temporary manual enforcement. Future evolution:
-# orchestrator creates branches automatically per
-# tasks/README.md "Future Integration Roadmap"
+# ORCHESTRATOR agent (see design-docs/future-agents.md) will
+# create branches and open PRs automatically after QA approval.
+# tasks/README.md "Future Integration Roadmap" has full details.
 CURRENT_BRANCH=$(git -C "${REPO_ROOT}" branch --show-current)
 if [ "$CURRENT_BRANCH" = "main" ]; then
   echo "ERROR: Cannot run pipeline on main branch"

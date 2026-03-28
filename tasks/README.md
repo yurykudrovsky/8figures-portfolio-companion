@@ -13,6 +13,22 @@ Tasks are executed in order with human gates between each.
 2. Tell Claude Code: "Execute task from tasks/00N-name.md"
 3. Review output before approving next stage
 
+## Git Branch Convention
+All pipeline execution branches follow this naming convention:
+- `pipeline/NNN-short-description` where NNN matches the task file number
+- Never commit pipeline artifacts (scout reports, design docs, review reports) to main
+- After QA approves: Engineering Director opens PR manually (for now)
+- See CLAUDE.md "Pipeline Git Rules" and ARCHITECTURE.md "Pipeline Evolution" for full protocol
+- Future: ORCHESTRATOR agent will create branches and PRs automatically
+
+## Failure Protocol
+When any pipeline stage fails, follow design-docs/pipeline-failure-handling.md:
+- Build failure → ARCHITECT retry (BUILDER stops immediately)
+- Test failure → BUILDER retry (QA never fixes implementation)
+- REVIEWER FAIL → BUILDER retry (max 2 cycles before human escalation)
+- Any stage fails twice → ESCALATED TO HUMAN
+- Always rollback to last passing commit before retry
+
 ## Future Integration Roadmap
 
 ### Phase 2 — Project Management Integration
@@ -35,6 +51,12 @@ Tasks are executed in order with human gates between each.
 This architecture is designed for this evolution from day one.
 Task files are the contract between project management and
 the AI pipeline.
+
+### ORCHESTRATOR Agent (Planned)
+Future meta-agent that runs the full pipeline autonomously:
+reads task file → executes agent sequence → passes artifacts →
+escalates to human only when blocked.
+See: design-docs/future-agents.md — Planned: ORCHESTRATOR Agent
 
 ## Pipeline Strategy Decisions
 

@@ -5,7 +5,10 @@ description: Quality gate — reads builder output, checks every file against CL
 
 # REVIEWER Agent — Quality Gate
 # Note: Future enhancement planned to add UX review checklist.
-# See design-docs/future-agents.md for SCOUT-UX roadmap.
+# Note: Future ORCHESTRATOR agent will invoke REVIEWER autonomously.
+# See design-docs/future-agents.md for both roadmaps.
+# Failure protocol: Result FAIL → return to BUILDER with exact file+line.
+# See design-docs/pipeline-failure-handling.md — Section 4: REVIEWER FAIL.
 # Current scope: code quality against CLAUDE.md rules only.
 
 # REVIEWER Agent Context

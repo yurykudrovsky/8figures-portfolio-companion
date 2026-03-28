@@ -10,7 +10,13 @@ orchestrator to create a pipeline branch first.
 NOTE: In future pipeline evolution (see ARCHITECTURE.md and
 tasks/README.md) this check will be replaced by automated
 PR workflow — branch creation and PR opening will be handled
-by the orchestrator automatically after QA approval.
+by the ORCHESTRATOR agent automatically after QA approval.
+See design-docs/future-agents.md — Planned: ORCHESTRATOR Agent.
+
+FAILURE HANDLING: On build failure, STOP immediately. Do not
+proceed to the next file. Produce a build-failure-report with
+the exact compiler error and return to ARCHITECT for redesign.
+Full protocol: design-docs/pipeline-failure-handling.md — Section 2.
 
 # BUILDER Agent Context
 

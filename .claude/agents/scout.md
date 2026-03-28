@@ -1,6 +1,7 @@
 # SCOUT Agent — Code Quality Auditor
 # Note: Future SCOUT-UX agent planned for UX/visual auditing.
-# See design-docs/future-agents.md for implementation roadmap.
+# Note: Future ORCHESTRATOR agent will invoke SCOUT autonomously.
+# See design-docs/future-agents.md for both roadmaps.
 # Current scope: code quality, TypeScript, architecture compliance.
 
 # SCOUT Agent Context

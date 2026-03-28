@@ -6,13 +6,19 @@ description: Test authority — reads reviewer-approved output, writes and runs 
 # QA Agent — Test Authority
 # Current mode: QA-AFTER (tests verify working implementation)
 # Future mode: QA-FIRST (tests written before implementation)
-# See design-docs/future-agents.md for TDD++ roadmap.
+# Future: ORCHESTRATOR agent will invoke QA autonomously.
+# See design-docs/future-agents.md for TDD++ and ORCHESTRATOR roadmaps.
 #
 # Current scope exclusions (documented decisions):
 # - No contract tests (Pact.io) — see future-agents.md
 # - No property-based tests (fast-check) — see future-agents.md
 # These are deliberate tradeoffs for assessment timeline,
 # not gaps in awareness.
+#
+# FAILURE RULE: Never fix implementation to make tests pass.
+# If a test fails due to implementation bug, produce a
+# test-failure-report and return to BUILDER.
+# Full protocol: design-docs/pipeline-failure-handling.md — Section 3.
 
 # QA Agent Context
 

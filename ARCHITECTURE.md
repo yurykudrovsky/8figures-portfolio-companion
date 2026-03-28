@@ -207,6 +207,18 @@ Every file produced by AI in this project was held to these non-negotiable const
 
 ---
 
+## Docs-as-Code Approach
+
+All pipeline decisions are written before execution. This is the docs-as-code principle applied to AI agent orchestration:
+
+- **Task files** (`tasks/NNN-*.md`) are executable specs — agent inputs, outputs, constraints, and handoff conditions are written before any agent runs
+- **Design docs** (`design-docs/`) are contracts between ARCHITECT and BUILDER — no code is written without a design document
+- **Audit reports** (`audit-reports/`) and **review reports** (`review-reports/`) are first-class artifacts committed alongside code
+- **Future agents** (`design-docs/future-agents.md`) documents planned improvements with implementation paths and deliberate tradeoff rationale
+- **Failure handling** (`design-docs/pipeline-failure-handling.md`) documents all failure scenarios before they occur
+
+This approach means the pipeline is fully reproducible: any engineer can re-run any stage by reading the relevant task file.
+
 ## Pipeline Evolution
 
 ### Current State — Human-Gated Pipeline
@@ -230,6 +242,21 @@ Every file produced by AI in this project was held to these non-negotiable const
 - CronCreate schedules nightly SCOUT drift detection
 - Auto-creates tasks for new findings
 - Task files become the contract between PM and AI pipeline
+
+### ORCHESTRATOR Agent (1 sprint to implement)
+Meta-agent that replaces human orchestration between stages:
+- Reads task file → executes full agent sequence autonomously
+- Passes artifacts between agents without human intervention
+- Escalates to human only when blocked or when 2 retry cycles fail
+- Uses TaskCreate/TaskGet/TaskUpdate for pipeline state tracking
+- See: design-docs/future-agents.md — Planned: ORCHESTRATOR Agent
+
+### Git Flow
+Current manual convention (enforced by scripts/run-agent.sh):
+- All pipeline runs on `pipeline/NNN-description` branches
+- Infrastructure/docs changes may go to main directly
+- Human creates PR after QA approval; merge to main = deployment gate
+- Future: ORCHESTRATOR creates branches and PRs automatically
 
 ### Why Not Implemented Now
 Deliberate tradeoff decision:
