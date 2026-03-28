@@ -53,7 +53,24 @@ See tasks/README.md "Future Integration Roadmap" and
 ARCHITECTURE.md "Pipeline Evolution" for complete roadmap
 of Jira/GitHub/Monday integration.
 
-## QA-FIRST Mode (TDD++ Pipeline)
+## QA-FIRST Mode (ATDD Pipeline — Acceptance Test-Driven Development)
+
+### ATDD — Acceptance Test-Driven Development
+Industry standard methodology used in fintech and
+safety-critical software. Three-stage quality loop:
+1. Acceptance criteria written BEFORE design (SPECS agent)
+2. Failing acceptance tests written BEFORE code (QA-FIRST agent)
+3. Implementation proceeds until all tests pass (BUILDER)
+
+Also known as: Outside-In TDD, Double-Loop TDD,
+Specification by Example.
+Reference: https://en.wikipedia.org/wiki/Acceptance_test-driven_development
+
+Our implementation:
+SPECS → QA-FIRST → BUILDER → QA-VERIFY
+maps directly to ATDD cycle:
+Criteria → Red → Green → Refactor
+
 ### Current
 QA runs AFTER builder implements. Tests verify working code.
 
@@ -68,7 +85,7 @@ SCOUT → ARCHITECT → SPECS → QA-FIRST → BUILDER → REVIEWER → QA-VERIF
 
 ### Why Not Now
 Assessment timeline — 5-stage pipeline sufficient for demonstration.
-Full TDD++ appropriate for production fintech where financial
+Full ATDD (Acceptance Test-Driven Development) appropriate for production fintech where financial
 calculations require exhaustive test coverage before deployment.
 
 ### Implementation Path

@@ -7,7 +7,7 @@ Current state:
 - Run with: npx ng test --watch=false
 
 Planned evolution:
-1. TDD++ — write failing tests before implementation
+1. ATDD (Acceptance Test-Driven Development) — write failing tests before implementation
 2. Contract Testing with Pact.io
 3. Property-Based Testing with fast-check
 

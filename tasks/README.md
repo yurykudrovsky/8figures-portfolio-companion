@@ -68,7 +68,7 @@ See: design-docs/future-agents.md — Planned: ORCHESTRATOR Agent
 
 ## Pipeline Strategy Decisions
 
-### TDD++ — Documented, Not Implemented
+### ATDD (Acceptance Test-Driven Development) — Documented, Not Implemented
 Current pipeline: QA after implementation (pragmatic for timeline)
 Production pipeline: QA-FIRST with failing tests before code
 See: design-docs/future-agents.md — QA-FIRST Mode
