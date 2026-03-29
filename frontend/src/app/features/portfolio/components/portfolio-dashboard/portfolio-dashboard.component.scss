@@ -282,8 +282,8 @@ ion-refresher {
 }
 
 .donut-chart {
-  width: 180px;
-  height: 180px;
+  width: min(85vw, 320px);
+  height: min(85vw, 320px);
   overflow: visible;
 }
 
@@ -293,48 +293,60 @@ ion-refresher {
 }
 
 .chart-centre-label {
-  font-size: 14px;
-  font-weight: 700;
-  fill: var(--app-text-primary);
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0.05em;
+  fill: #8b949e;
+  text-anchor: middle;
+}
+
+.chart-centre-value {
+  font-size: 28px;
+  font-weight: 600;
+  fill: #e8eaed;
   text-anchor: middle;
   font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
 }
 
 .chart-centre-sub {
-  font-size: 9px;
-  fill: var(--app-text-secondary);
+  font-size: 11px;
+  font-weight: 500;
   text-anchor: middle;
+  letter-spacing: 0.02em;
 }
 
 .chart-legend {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 8px 16px;
-  margin-top: 12px;
+  gap: 8px 20px;
+  margin-top: 14px;
   padding-bottom: 4px;
 }
 
 .legend-item {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 7px;
 }
 
-.legend-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
+.legend-pill {
+  width: 18px;
+  height: 4px;
+  border-radius: 2px;
   flex-shrink: 0;
+  opacity: 0.85;
 }
 
 .legend-label {
   font-size: 12px;
   color: var(--app-text-secondary);
+  letter-spacing: 0.02em;
 }
 
 .legend-pct {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
   color: var(--app-text-primary);
   font-variant-numeric: tabular-nums;

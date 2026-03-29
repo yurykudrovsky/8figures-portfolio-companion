@@ -71,7 +71,7 @@
 
     @if (chartSegments().length > 0) {
       <div class="chart-section">
-        <svg class="donut-chart" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+        <svg class="donut-chart" viewBox="0 0 320 320" xmlns="http://www.w3.org/2000/svg">
           @for (seg of chartSegments(); track seg.label) {
             <path
               [attr.d]="arcPath(seg)"
@@ -79,13 +79,15 @@
               class="chart-segment"
             />
           }
-          <text x="100" y="95" class="chart-centre-label">{{ formatCurrency(displayValue()) }}</text>
-          <text x="100" y="115" class="chart-centre-sub">Total Value</text>
+          <text x="160" y="141" class="chart-centre-label">Portfolio</text>
+          <text x="160" y="172" class="chart-centre-value">{{ formatCurrency(displayValue()) }}</text>
+          <text x="160" y="190" class="chart-centre-sub"
+            [attr.fill]="p.dailyChange >= 0 ? '#00c853' : 'var(--app-loss)'">{{ formatPercent(p.dailyChangePercent) }} today</text>
         </svg>
         <div class="chart-legend">
           @for (seg of chartSegments(); track seg.label) {
             <div class="legend-item">
-              <span class="legend-dot" [style.background]="seg.color"></span>
+              <span class="legend-pill" [style.background]="seg.color"></span>
               <span class="legend-label">{{ seg.label }}</span>
               <span class="legend-pct">{{ (seg.percent * 100).toFixed(1) }}%</span>
             </div>
