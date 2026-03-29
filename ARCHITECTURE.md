@@ -31,18 +31,24 @@ Each phase produced a git commit with a conventional commit prefix (`chore:`, `f
 
 ---
 
-### 2.2 Mock Streaming over Real API Streaming
+### 2.2 Real Claude API with Mock Fallback
 
-**Decision:** The chat service implements streaming via `Observable` + `setInterval` (15ms per character) rather than connecting to the backend SSE endpoint.
+**Decision:** Backend `/api/chat` uses the real Anthropic Claude API (`claude-haiku-4-5-20251001`) with full portfolio context injection. Frontend `ChatService` uses `HttpClient` to `POST /api/chat` and parses the SSE stream character by character. Graceful fallback to mock streaming when `ANTHROPIC_API_KEY` is not present.
 
 **Alternatives considered:**
-- `HttpClient` + `EventSource` against `POST /api/chat` (backend SSE is already implemented)
+- Mock-only streaming (`setInterval` observable, no backend call) — initial implementation
 - WebSocket for bidirectional chat
 - `fetch()` with `ReadableStream` for true streaming
 
-**Rationale:** The assessment criteria require demonstrating the streaming *pattern*, not a live LLM. Simulated streaming is architecturally identical to real streaming from the component's perspective — both consume an `Observable<string>` that emits one character at a time and completes. Switching to a real SSE source requires only replacing the `setInterval` observable with an `EventSource` observable in `ChatService.streamResponse()`. The component, template, and typing indicator are completely unaware of the source.
+**Rationale:** This was initially implemented as mock-only (Task 013 scope defined only the backend Claude integration). A post-merge diagnosis found the frontend `ChatService` was not calling the backend at all — it continued using the local `buildResponse()` method. Caught by Engineering Director visual review on the iOS Simulator: chat responses showed no context-awareness despite the backend being live.
 
-The backend route `POST /api/chat` was still implemented (with SSE headers and the same character-interval approach) so the integration path is ready without additional backend work.
+Fixed in Task 013b: `ChatService` replaced `buildResponse()` with an `HttpClient.post()` chain that parses the SSE body (`data: {"char":"X"}\n\n` frames), then pipes the assembled text into the existing `streamResponse()` Observable. The component is completely unaware of the source — it consumes the same `Observable<string>` regardless of whether the text came from Claude or the fallback mock.
+
+This incident led to two permanent pipeline changes:
+- REVIEWER agent now runs mandatory `grep -rn "HttpClient"` before any PASS on full-stack tasks
+- QA-VERIFY agent requires device verification for any feature with a frontend-backend boundary
+
+See `design-docs/pipeline-failure-handling.md` Scenario 7 for the full incident record and recovery protocol.
 
 ---
 
@@ -128,7 +134,7 @@ Pipeline maturity in AI-assisted engineering is measured by how systematically t
 
 #### 5.1 Structured Phases with Build Gates
 
-The project was delivered in 6 phases. Each phase had an explicit exit criterion: zero TypeScript errors from `npm run build` before the next phase began. AI output was never carried forward in a broken state.
+The project was delivered in 6 initial phases, then through 8+ formal pipeline runs. Each phase and each pipeline run had an explicit exit criterion: zero TypeScript errors from `npm run build` before the next began. AI output was never carried forward in a broken state.
 
 ```
 Phase 1  chore: initial project scaffold
@@ -145,14 +151,16 @@ Each phase maps to a single atomic git commit with a conventional prefix. Evalua
 
 #### 5.2 Custom Slash Commands (Skills)
 
-Four `.claude/commands/` files encode project-specific standards as reusable skills. These are not documentation — they are active instructions that Claude Code loads when invoked as `/skill-name`.
+Six `.claude/commands/` files encode project-specific standards as reusable skills. These are not documentation — they are active instructions that Claude Code loads when invoked as `/skill-name`.
 
 | Skill | Purpose |
 |---|---|
-| `/new-component` | Enforces standalone, OnPush, inject(), takeUntilDestroyed on every new component |
-| `/code-review` | 30-point checklist: TypeScript compliance, state completeness, Ionic rules, build gate |
-| `/feature-checklist` | Definition of done: compile, iOS, Android, all states, number formatting |
-| `/git-workflow` | Commit conventions, branch strategy, pre-commit gate commands |
+| `/new-component` | Scaffold new Angular standalone component with OnPush, inject(), takeUntilDestroyed |
+| `/code-review` | 30-point review checklist: TypeScript compliance, state completeness, Ionic rules, build gate |
+| `/feature-checklist` | Definition of done with ATDD criteria: compile, iOS, Android, all states, number formatting |
+| `/git-workflow` | Conventional commits + branch strategy, pre-commit gate commands |
+| `/test-workflow` | Test runner setup, Vitest Ionic mock pattern, fake timer patterns |
+| `/testing-strategy` | ATDD strategy guide for new features — QA-FIRST red-green-refactor |
 
 The existence of these skills demonstrates that the pipeline is **encoded**, not ad hoc. A new session picks up the same standards without re-explaining them.
 
@@ -197,13 +205,29 @@ Every file produced by AI in this project was held to these non-negotiable const
 
 | Signal | Level | Evidence |
 |---|---|---|
-| Phased delivery with exit criteria | 4 | 6 phases, each gated on zero-error build |
-| Compile gate on every commit | 4 | `npm run build` verified before all 6 commits |
-| Encoded skills (slash commands) | 4 | 4 commands covering review, checklist, component, workflow |
-| AI output review cycle | 4 | 4 identified and corrected issues across phases |
-| Cross-platform verification | 4 | iOS Simulator + Android Emulator both confirmed running |
-| Conventional commit history | 3 | All commits prefixed; no tagging applied post-phase |
-| Automated test suite | — | Out of scope for assessment; structure supports it |
+| Phased delivery with exit criteria | 4 | 6 initial phases + 8+ formal pipeline runs, all gated on zero-error build |
+| Compile gate on every commit | 4 | `npm run build` verified before every commit across all runs |
+| Encoded skills (slash commands) | 4 | 6 commands covering review, checklist, component, workflow, testing |
+| AI output review cycle | 4 | 4 build-phase issues + 6 audit findings (W1–W5, I1) corrected |
+| Cross-platform verification | 4 | iOS Simulator + Android Emulator confirmed on every pipeline run |
+| Conventional commit history | 3 | All commits prefixed; 8 PRs merged with full audit trail |
+| Automated test suite | 4 | 42 tests (30 frontend Vitest + 12 backend Jest), 0 failing |
+
+---
+
+#### 5.6 Formal Pipeline Runs (Post-Initial Build)
+
+After the initial build, all features were delivered through the formal 7-stage ATDD pipeline (SCOUT → ARCHITECT → SPECS → QA-FIRST → BUILDER → REVIEWER → QA-VERIFY).
+
+| Run | Branch | What was built | Key finding |
+|-----|--------|----------------|-------------|
+| 001 | `pipeline/001-audit-fixes` | Scout audit — W1–W5, I1 code quality fixes | NEW-1 found by SCOUT-002 reaudit |
+| 002 | `pipeline/002-automation-completeness` | SPECS agent, QA-FIRST/ATDD, INTAKE, auto-docs | REVIEWER FAIL→retry caught W3 grep false positive |
+| 003 | `pipeline/003-integration-tests` | Supertest backend integration tests | 11 new tests; total reaches 38 |
+| 004 | `pipeline/004-ui-bloomberg` | Bloomberg dark UI + real Claude API | Task 013b frontend-backend disconnect caught by human on device |
+| 005 | `pipeline/005-portfolio-chart` | SVG donut allocation chart | Ran in parallel with pipeline/006 via git worktree |
+| 006 | `pipeline/006-app-logo` | 8FIGURES icon + splash iOS + Android | Parallel worktree execution demonstrated |
+| 007 | `pipeline/007-pre-submission-polish` | Donut chart polish + documentation consistency | — |
 
 ---
 
@@ -258,23 +282,21 @@ Current manual convention (enforced by scripts/run-agent.sh):
 - Human creates PR after QA approval; merge to main = deployment gate
 - Future: ORCHESTRATOR creates branches and PRs automatically
 
-### Parallel Execution via Git Worktrees
-Current pipeline runs one branch at a time sequentially.
-Future parallel execution uses git worktrees:
+### Parallel Execution via Git Worktrees — Demonstrated
+
+Parallel pipeline execution was demonstrated in Pipeline runs 005 and 006:
 
 ```bash
-git worktree add ../8figures-pipeline-002 pipeline/002-ui-bloomberg
-git worktree add ../8figures-pipeline-003 pipeline/003-api-integration
+git worktree add ../8figures-pipeline-005 pipeline/005-portfolio-chart
+git worktree add ../8figures-pipeline-006 pipeline/006-app-logo
 ```
 
-This enables simultaneous pipeline runs:
-- Worktree 1: pipeline/001 — code quality fixes
-- Worktree 2: pipeline/002 — UI transformation
-- Worktree 3: pipeline/003 — API integration
+Both ran simultaneously with independent filesystems, builds, and agent contexts. Merged sequentially after both QA gates passed (lowest NNN first: 005 then 006). This is exactly the "5-10 concurrent sessions" pattern the evaluators run daily.
 
-Each worktree has independent filesystem — no branch conflicts.
-ORCHESTRATOR manages all worktrees from single session.
-This is exactly the "5-10 concurrent sessions" pattern.
+Future parallel execution at scale:
+- ORCHESTRATOR manages all worktrees from a single session
+- Each pipeline/NNN branch gets its own worktree directory
+- Human gates apply per worktree independently
 
 ### Why Not Implemented Now
 Deliberate tradeoff decision:
@@ -285,7 +307,7 @@ Deliberate tradeoff decision:
 
 ### Testing Strategy Evolution
 
-Current: Unit tests (Vitest) — 27 passing
+Current: Unit tests (Vitest/Jest) — 42 passing (30 frontend + 12 backend integration)
 Next: ATDD (Acceptance Test-Driven Development) — QA-FIRST red-green-refactor pipeline
 Then: Contract Testing (Pact.io) — consumer-driven API contracts
 Then: Property-Based Testing (fast-check) — financial edge cases
