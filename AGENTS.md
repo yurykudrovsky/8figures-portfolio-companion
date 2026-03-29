@@ -1,6 +1,6 @@
 # 8FIGURES — Multi-Agent Pipeline Architecture
 
-This project uses a five-agent pipeline where each agent has a single, bounded responsibility. No agent crosses into another's domain. The human engineer orchestrates handoffs and is the only entity that approves transitions between stages.
+This project uses an eight-agent pipeline where each agent has a single, bounded responsibility. No agent crosses into another's domain. The human engineer orchestrates handoffs and is the only entity that approves transitions between stages.
 
 ---
 
@@ -11,28 +11,44 @@ Codebase / Requirements
         │
         ▼
    ┌─────────┐
+   │ INTAKE  │  Reads inbox/ docs → generates task files
+   └────┬────┘
+        │  tasks/NNN-*.md
+        ▼
+   ┌─────────┐
    │  SCOUT  │  Read-only audit → structured report
    └────┬────┘
-        │  audit-report.md
+        │  audit-reports/
         ▼
 ┌────────────┐
-│ ARCHITECT  │  Design doc → interfaces, flows, component trees
+│ ARCHITECT  │  Design doc → interfaces, flows, contracts
 └──────┬─────┘
-       │  design-doc.md
+       │  design-docs/
        ▼
   ┌─────────┐
-  │ BUILDER │  Implementation → code changes only
+  │  SPECS  │  Acceptance criteria → user-facing specs
+  └────┬────┘
+       │  specs/
+       ▼
+┌───────────┐
+│ QA-FIRST  │  Failing tests BEFORE implementation (ATDD)
+└─────┬─────┘
+      │  *.spec.ts stubs (RED)
+      ▼
+  ┌─────────┐
+  │ BUILDER │  Implements until QA-FIRST tests pass (GREEN)
   └────┬────┘
        │  code changes
        ▼
 ┌──────────┐
-│ REVIEWER │  Pass/fail report → specific line references
+│ REVIEWER │  Pass/fail report → exact grep evidence
 └─────┬────┘
-      │  review-report.md
+      │  review-reports/
       ▼
-  ┌──────┐
-  │  QA  │  Tests → results + coverage report
-  └──────┘
+┌───────────┐
+│ QA-VERIFY │  Final verification — confirms all ACs pass
+└───────────┘
+      │  qa-reports/
 ```
 
 **Human review is required at every handoff.** No agent reads the output of the previous agent without the engineer first reviewing and approving it.
@@ -40,6 +56,24 @@ Codebase / Requirements
 ---
 
 ## Agent Definitions
+
+### INTAKE — Requirement Intake Agent
+
+**Single responsibility:** Read requirement documents dropped in `inbox/` and convert them into structured task files in `tasks/`. Never implement features. Never run the pipeline — only prepare inputs for it.
+
+**Permitted actions:**
+- Read any file in `inbox/`
+- Read `tasks/TEMPLATE.md` for task file format
+- Write task files to `tasks/NNN-*.md`
+
+**Forbidden actions:**
+- Writing or editing source files
+- Running build or test commands
+- Making design decisions — all design goes to ARCHITECT
+
+**Output format:** One `tasks/NNN-*.md` per discovered feature or bug, following `tasks/TEMPLATE.md` structure exactly.
+
+---
 
 ### SCOUT — Read-Only Auditor
 
@@ -95,6 +129,55 @@ Codebase / Requirements
 ## API Contract
 ## Open Questions (for engineer to resolve before BUILDER starts)
 ```
+
+---
+
+### SPECS — Acceptance Criteria Authority
+
+**Single responsibility:** Translate ARCHITECT design documents into user-facing acceptance criteria and feature specs. Write to `specs/` directory. Never implement.
+
+**Permitted actions:**
+- Read design docs in `design-docs/`
+- Read `CLAUDE.md` for project standards
+- Write specs to `specs/NNN-*.md`
+
+**Forbidden actions:**
+- Writing `.ts`, `.html`, `.scss`, or any source files
+- Modifying design docs
+- Making implementation decisions
+
+**Output format:**
+```markdown
+# Specs — <feature> — <date>
+## Acceptance Criteria
+### AC-U (User-facing)
+- [ ] AC-U1: <user-visible behaviour>
+### AC-F (Frontend)
+- [ ] AC-F1: HttpClient used for all backend calls
+### AC-B (Backend)
+- [ ] AC-B1: <backend behaviour>
+### AC-I (Integration)
+- [ ] AC-I1: <end-to-end behaviour on device>
+## Definition of Done
+```
+
+---
+
+### QA-FIRST — ATDD Gate
+
+**Single responsibility:** Write FAILING tests before BUILDER implements. This is the red phase of red-green-refactor. Tests must fail when written — if they pass, the feature already exists and BUILDER is not needed.
+
+**Permitted actions:**
+- Read specs in `specs/`
+- Write `*.spec.ts` stub files (failing assertions only)
+- Run `npx ng test --watch=false` to confirm tests fail
+
+**Forbidden actions:**
+- Writing implementation code
+- Making tests pass by any means other than implementation
+- Skipping the run-to-confirm-failure step
+
+**Output format:** `*.spec.ts` stubs with `it('AC-U1: ...', () => { expect(...).toBe(...) })` — one test per acceptance criterion. All must be RED before handing to BUILDER.
 
 ---
 
@@ -166,20 +249,21 @@ Codebase / Requirements
 
 ---
 
-### QA — Test Authority
+### QA-VERIFY — Final Verification
 
-**Single responsibility:** Read reviewer-approved output. Write and run unit tests. Never fix failing tests by modifying the implementation. If a test reveals a bug in the implementation, file it as a finding and return to the pipeline.
+**Single responsibility:** Verify all acceptance criteria pass after BUILDER implementation. Run the full test suite. Confirm every AC from `specs/` is green. Never fix implementation — only report bugs found and return them to BUILDER via the engineer.
 
 **Permitted actions:**
-- Read source files and reviewer reports
-- Write `.spec.ts` files in their correct feature directories
-- Run `npx ng test --watch=false`
-- Write a test report to `qa-reports/YYYY-MM-DD-qa-<feature>.md`
+- Read source files, reviewer reports, and specs
+- Run `npx ng test --watch=false` and `npm test` (backend)
+- Write a final report to `qa-reports/YYYY-MM-DD-qa-<feature>.md`
+- For full-stack features: verify on device (iOS Simulator or Android Emulator)
 
 **Forbidden actions:**
 - Editing non-test source files (`.ts` without `.spec`, `.html`, `.scss`, `.json`)
 - Modifying implementation to make a test pass
 - Skipping tests with `it.skip` without documenting why
+- Issuing SHIP without device verification on full-stack features
 
 **Output format:**
 ```markdown
@@ -188,10 +272,12 @@ Codebase / Requirements
 ## Tests Run: N
 ## Tests Passing: N
 ## Tests Failing: N
-## Coverage (if measured)
-## Failing Tests
-| Test name | Expected | Actual | Root cause |
-|---|---|---|---|
+## Acceptance Criteria Verification
+| AC | Description | Status |
+|---|---|---|
+## Device Verification (full-stack features)
+- iOS Simulator: PASS | FAIL | N/A
+- Android Emulator: PASS | FAIL | N/A
 ## Implementation bugs found (return to BUILDER via engineer)
 ## Recommendation: SHIP | RETURN TO BUILDER
 ```
@@ -210,7 +296,7 @@ Codebase / Requirements
 5. Only the engineer may advance the pipeline stage
 ```
 
-Agents never call each other directly. All orchestration goes through the engineer. This keeps the human in the decision loop at every quality gate.
+Agents never call each other directly. All orchestration goes through the engineer. This keeps the human in the decision loop at every quality gate across all 8 pipeline stages.
 
 ---
 
@@ -218,11 +304,14 @@ Agents never call each other directly. All orchestration goes through the engine
 
 | Agent | Read Files | Write Files | Run Commands | Mutate Source |
 |---|---|---|---|---|
+| INTAKE | ✓ `inbox/` | `tasks/*.md` | read-only | ✗ |
 | SCOUT | ✓ all | `audit-reports/*.md` | read-only only | ✗ |
 | ARCHITECT | ✓ all | `design-docs/*.md` | ✗ | ✗ |
+| SPECS | ✓ all | `specs/*.md` | ✗ | ✗ |
+| QA-FIRST | ✓ `specs/` | `*.spec.ts` | test only | ✗ |
 | BUILDER | ✓ all | `src/**` | build + test | ✓ |
 | REVIEWER | ✓ all | `review-reports/*.md` | build + test | ✗ |
-| QA | ✓ all | `**/*.spec.ts` | test only | ✗ |
+| QA-VERIFY | ✓ all | `qa-reports/*.md` | test only | ✗ |
 
 ---
 
@@ -230,11 +319,14 @@ Agents never call each other directly. All orchestration goes through the engine
 
 ```bash
 # Start a named agent session
+./scripts/run-agent.sh intake "process all docs in inbox/"
 ./scripts/run-agent.sh scout "audit API routes for type safety"
 ./scripts/run-agent.sh architect "design new allocation chart feature"
-./scripts/run-agent.sh builder "implement allocation chart per design-docs/2026-03-27-allocation-chart.md"
+./scripts/run-agent.sh specs "write acceptance criteria for allocation chart"
+./scripts/run-agent.sh qa-first "write failing tests for allocation chart"
+./scripts/run-agent.sh builder "implement allocation chart per design-docs/2026-03-28-allocation-chart.md"
 ./scripts/run-agent.sh reviewer "review allocation chart implementation"
-./scripts/run-agent.sh qa "test allocation chart service"
+./scripts/run-agent.sh qa-verify "verify all acceptance criteria pass for allocation chart"
 ```
 
 See `scripts/run-agent.sh` for session logging details.
