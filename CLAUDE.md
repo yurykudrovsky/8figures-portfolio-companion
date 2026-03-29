@@ -12,6 +12,9 @@ A mobile-first AI portfolio companion with:
 2. AI Chat Interface — streaming responses, portfolio-aware context
 3. Lightweight Node/Express backend — data API + AI proxy
 4. Capacitor deployment — iOS Simulator + Android Emulator
+5. Bloomberg dark terminal UI (`#0a0a0f` background, `#00d4aa` accent)
+6. Portfolio allocation donut chart (SVG, responsive, Bloomberg-style ring)
+7. Real Anthropic Claude API with full portfolio context injection
 
 ## Tech Stack (non-negotiable, exact versions)
 - Angular 20+ (standalone components, no NgModules)
@@ -28,6 +31,19 @@ A mobile-first AI portfolio companion with:
 - Services handle ALL business logic — components are display only
 - Dependency injection for everything — no service instantiation in components
 - Reactive first: Signals for local state, RxJS for async streams
+
+## Pipeline Architecture
+7-stage ATDD pipeline — every feature goes through:
+SCOUT → ARCHITECT → SPECS → QA-FIRST → BUILDER → REVIEWER → QA-VERIFY
+
+Plus INTAKE agent for requirement-driven development:
+- Drop documents in `inbox/`
+- INTAKE converts to structured task files in `tasks/`
+- Pipeline executes from task files
+
+All 7 specialist agents (plus INTAKE for requirement intake) have context
+files in `.claude/agents/`. See `tasks/README.md` for the full pipeline
+run log and `design-docs/pipeline-failure-handling.md` for failure protocols.
 
 ## Folder Structure
 ```
@@ -112,16 +128,13 @@ Create realistic portfolio with minimum:
 Suggested holdings: AAPL, NVDA, MSFT, BTC, ETH, VOO, TSLA, AMZN
 
 ## AI Chat Implementation
-Use MOCK implementation with streaming simulation:
-- Simulate streaming with Observable + timer intervals
-- Character-by-character reveal (15ms delay per character)
-- Responses MUST reference actual portfolio data
-- Pre-built contextual responses for common questions:
-  - "How is my portfolio doing?"
-  - "What is my best performer?"
-  - "Should I rebalance?"
-  - "What is my crypto exposure?"
-- Fallback intelligent response for unknown questions
+Use REAL Claude API via backend `/api/chat` endpoint:
+- `ANTHROPIC_API_KEY` loaded from `backend/.env` via `dotenv`
+- `buildSystemPrompt(portfolio)` injects full portfolio as Claude context
+- Backend streams SSE: `data: {"char":"X"}\n\n` per character, `data: {"done":true}\n\n` on complete
+- Frontend `ChatService` uses `HttpClient` to `POST /api/chat`, parses SSE body, pipes into `streamResponse()`
+- Graceful fallback to mock streaming if API key not present
+- Model: `claude-haiku-4-5-20251001`
 
 ## Streaming Pattern (mandatory)
 ```typescript
@@ -209,9 +222,9 @@ npm run dev                 # development with nodemon
 ```
 
 # Note on Pipeline Architecture
-Current pipeline uses human orchestration between 5 specialist
-agents. See design-docs/future-agents.md for planned
-ORCHESTRATOR and SCOUT-UX agents that will automate handoffs
+Current pipeline uses human orchestration between 7 specialist
+agents (plus INTAKE for requirement intake). See design-docs/future-agents.md
+for planned ORCHESTRATOR and SCOUT-UX agents that will automate handoffs
 and add UX audit capability.
 
 MCP Integration Roadmap: See design-docs/future-agents.md
