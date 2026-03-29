@@ -79,8 +79,10 @@
               class="chart-segment"
             />
           }
-          <text x="160" y="150" class="chart-centre-label">Total Value</text>
-          <text x="160" y="186" class="chart-centre-value">{{ formatCurrency(displayValue()) }}</text>
+          <text x="160" y="141" class="chart-centre-label">Portfolio</text>
+          <text x="160" y="172" class="chart-centre-value">{{ formatCurrency(displayValue()) }}</text>
+          <text x="160" y="190" class="chart-centre-sub"
+            [attr.fill]="p.dailyChange >= 0 ? '#00c853' : 'var(--app-loss)'">{{ formatPercent(p.dailyChangePercent) }} today</text>
         </svg>
         <div class="chart-legend">
           @for (seg of chartSegments(); track seg.label) {
