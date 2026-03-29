@@ -11,9 +11,17 @@ For requirement-driven development, run INTAKE first:
 - Then execute generated tasks through normal pipeline
 
 ## Pipeline Run Log
-| Run | Date | Stages | Result |
-|-----|------|--------|--------|
-| 001 | 2026-03-28 | 5/5 | COMPLETE ✅ |
+| Run | Date | Task(s) | Stages | PR | Result |
+|-----|------|---------|--------|----|--------|
+| 001 | 2026-03-28 | 001–005 audit fixes (W1–W5, I1) | 5/5 | #1 | COMPLETE ✅ |
+| 002 | 2026-03-28 | 006–008 pipeline automation (SPECS, QA-FIRST, INTAKE) | 5/5 | #2 | COMPLETE ✅ |
+| 003 | 2026-03-28 | Supertest integration tests — 11 backend API tests | 5/5 | #3 | COMPLETE ✅ |
+| 004 | 2026-03-28 | 012 Bloomberg dark UI + 013 Claude API integration | 7/7 | #4 | COMPLETE ✅ |
+| 005 | 2026-03-28 | 014 portfolio allocation donut chart | 7/7 | #5 | COMPLETE ✅ |
+| 006 | 2026-03-28 | 015 app icon + splash screens (iOS + Android) | 5/5 | #6 | COMPLETE ✅ |
+| 007 | 2026-03-29 | Donut chart Bloomberg polish (3 iterations) | 3/3 | #7 | COMPLETE ✅ |
+
+**7 pipeline runs · 7 merged PRs · 42 tests (30 frontend + 12 backend) · 0 failing**
 
 ## How to Execute
 1. Review task file
@@ -28,12 +36,13 @@ All pipeline execution branches follow this naming convention:
 - See CLAUDE.md "Pipeline Git Rules" and ARCHITECTURE.md "Pipeline Evolution" for full protocol
 - Future: ORCHESTRATOR agent will create branches and PRs automatically
 
-### Parallel Pipeline Runs (Future)
-Multiple pipeline branches can run simultaneously via worktrees:
-- Each pipeline/NNN branch gets its own worktree directory
-- ORCHESTRATOR spawns agents across worktrees in parallel
-- Human gates apply per worktree independently
-- Merge order: sequential, lowest NNN first
+### Parallel Pipeline Runs — Demonstrated (Runs 005 + 006)
+Multiple pipeline branches ran simultaneously via git worktrees:
+- `pipeline/005-portfolio-chart` + `pipeline/006-app-logo` ran in parallel
+- Each branch had its own isolated worktree directory and build
+- Human gates applied per worktree independently
+- Merged sequentially after both QA gates passed (lowest NNN first)
+- Future: ORCHESTRATOR spawns agents across worktrees autonomously
 See: ARCHITECTURE.md "Parallel Execution via Git Worktrees"
 
 ## Failure Protocol

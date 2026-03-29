@@ -204,7 +204,165 @@ Engineer reviewed all 27 passing tests. Approved.
 - Created `pipeline-log.md` (this file) — retrospective documentation
 
 ### Human review
-Pending — engineer to review and approve before final commit.
+Engineer reviewed all agent files, run script, and this log. Approved.
+
+---
+
+---
+
+## Formal Pipeline Runs (Post-Greenfield)
+
+The runs above (1–9) represent the initial greenfield build. After the scaffold was complete, the formal multi-agent pipeline began. Each run below follows the full protocol: task file in `tasks/`, branch named `pipeline/NNN-*`, agent sequence, human gates, PR, merge.
+
+---
+
+### Pipeline 001 — Scout Audit + Fix W1–W5
+
+**Date:** 2026-03-28
+**Branch:** `pipeline/001-audit-fixes` → PR #1
+**Stages:** SCOUT → ARCHITECT → BUILDER → REVIEWER → QA-VERIFY (5/5)
+**Artifacts:** `audit-reports/scout-audit-001.md`, `audit-reports/2026-03-28-scout-002.md`, `design-docs/2026-03-28-audit-fixes.md`, `review-reports/2026-03-28-review-audit-fixes.md`, `qa-reports/2026-03-28-qa-audit-fixes.md`
+
+#### Findings resolved
+
+| ID | Severity | Fix |
+|----|----------|-----|
+| W1 | Warning | Added `ChangeDetectionStrategy.OnPush` to root `App` component |
+| W2 | Warning | Deleted orphaned 344-line `app.html` scaffold |
+| W3 | Warning | Replaced `$any($event.target).value` → `($event as CustomEvent).detail.value` |
+| W4 | Warning | Eliminated `portfolio()!` non-null assertion — two-statement guard pattern |
+| W5 | Warning | Extracted `STREAMING_INTERVAL_MS = 15` constant in `chat.service.ts` and `backend/src/routes/chat.ts` |
+| I1 | Info | Moved `addIcons()` from constructor bodies to class field initializers in both feature components |
+| NEW-1 | Warning | Found by SCOUT-002 reaudit — fixed alongside W1–W5 |
+
+#### REVIEWER incident
+First REVIEWER run returned **FAIL** on W3 — `$any(` grep matched a comment in a different file. BUILDER issued targeted fix. Second REVIEWER run: **PASS**.
+
+#### Human gate
+All 5 gates passed. 27 tests passing post-fix. PR merged.
+
+---
+
+### Pipeline 002 — Automation Completeness (SPECS + QA-FIRST + INTAKE)
+
+**Date:** 2026-03-28
+**Branch:** `pipeline/002-automation-completeness` → PR #2
+**Stages:** ARCHITECT → BUILDER → REVIEWER → QA-VERIFY + docs-only stages (5/5)
+**Artifacts:** `.claude/agents/specs.md`, `.claude/agents/intake.md`, `tasks/006–008`, `inbox/README.md`
+
+#### What was done
+
+- Added **SPECS agent** — translates ARCHITECT designs into user-facing acceptance criteria before any code is written; stage 3 in the 7-stage pipeline
+- Added **QA-FIRST agent** — writes failing test stubs before BUILDER starts (ATDD); stage 4 in the 7-stage pipeline
+- Added **INTAKE agent** — parses requirements documents dropped in `inbox/`; auto-generates task files; enables requirement-driven development without manual task authoring
+- Added `.claude/commands/testing-strategy.md` skill — ATDD strategy guide for new features
+- Updated `AGENTS.md` to reflect 7-stage pipeline
+- Updated `tasks/README.md` with stage 0 INTAKE documentation and future roadmap
+
+#### Human gate
+All gates passed. No source code changed — pipeline-only deliverable. PR merged.
+
+---
+
+### Pipeline 003 — Backend Integration Tests
+
+**Date:** 2026-03-28
+**Branch:** `pipeline/003-integration-tests` → PR #3
+**Stages:** ARCHITECT → BUILDER → REVIEWER → QA-VERIFY (5/5)
+**Artifacts:** `backend/src/__tests__/portfolio.integration.test.ts`, `backend/src/__tests__/chat.integration.test.ts`, `design-docs/2026-03-28-integration-tests.md`, `review-reports/2026-03-28-review-integration-tests.md`, `qa-reports/2026-03-28-qa-integration-tests.md`
+
+#### What was done
+
+- Added **Supertest + Jest** integration test suite for the backend API
+- 11 backend tests covering all 4 endpoints: `GET /api/health`, `GET /api/portfolio`, `GET /api/portfolio/holdings`, `POST /api/chat`
+- Tests verify response shape, HTTP status codes, SSE `data:` frame format, and graceful error handling
+- Total test count: **27 frontend + 11 backend = 38 tests**
+
+#### Human gate
+All gates passed. PR merged.
+
+---
+
+### Pipeline 004 — Bloomberg Dark UI + Claude API Integration
+
+**Date:** 2026-03-28
+**Branch:** `pipeline/004-ui-bloomberg` → PR #4
+**Stages:** ARCHITECT → SPECS → QA-FIRST → BUILDER → REVIEWER → QA-VERIFY (7/7)
+**Artifacts:** `design-docs/2026-03-28-bloomberg-ui.md`, `design-docs/2026-03-28-claude-api.md`, `review-reports/2026-03-28-review-bloomberg-ui.md`, `review-reports/2026-03-28-review-claude-api.md`, `qa-reports/2026-03-28-qa-bloomberg-ui.md`, `qa-reports/2026-03-28-qa-claude-api.md`
+
+#### What was done
+
+- **Bloomberg dark theme**: `#0a0a0f` background, `#00d4aa` teal accent, gain (`#00d4aa`) / loss (`#ff4757`) color system, CSS design tokens in `variables.css`, gain/loss pill badges, left accent bars on holding cards, staggered card fade-in animation, hero count-up animation
+- **Real Claude API**: `@anthropic-ai/sdk`, `ANTHROPIC_API_KEY` from `.env`, `buildSystemPrompt()` formats full portfolio as Claude context, `for await` SSE streaming with character-by-character output, graceful mock fallback when key absent
+- **ChatService wired to backend**: replaced local `buildResponse()` with `HttpClient.post()` → SSE parser → `streamResponse()` Observable chain
+- iOS safe area fix: `viewport-fit=cover` + `env(safe-area-inset-*)` CSS mapping
+
+#### Key incident — Task 013 frontend-backend disconnect
+Task 013 (Claude API) wired the backend correctly but the frontend `ChatService` was never updated to call the backend — it continued using the local `buildResponse()` method. REVIEWER passed because grep checks only verified the backend. Discovered during device test. Root cause: task scope did not explicitly specify frontend HTTP layer.
+
+**Prevention added:** REVIEWER agent now runs mandatory `grep -rn "HttpClient"` check before any PASS on full-stack tasks. `tasks/TEMPLATE.md` gained an Integration Boundary section. `design-docs/pipeline-failure-handling.md` Scenario 7 documents this incident.
+
+#### Human gate
+All gates passed. 1 backend Jest mock fixed (`__esModule: true` required for `esModuleInterop` compatibility). PR merged.
+
+---
+
+### Pipeline 005 — Portfolio Allocation Donut Chart
+
+**Date:** 2026-03-28
+**Branch:** `pipeline/005-portfolio-chart` (worktree) → PR #5
+**Stages:** ARCHITECT → SPECS → BUILDER → REVIEWER → QA-VERIFY (7/7)
+**Parallel with:** Pipeline 006 via git worktree
+**Artifacts:** `tasks/014-portfolio-chart.md`, `design-docs/` (inline), `review-reports/`, `qa-reports/`
+
+#### What was done
+
+- SVG donut chart with `computed` signal grouping holdings by `assetType`
+- 4 asset type colors: stocks (teal accent), crypto (amber), ETFs (blue), bonds (slate)
+- `arcPath()` method generates SVG arc paths with outer/inner radius for ring effect
+- Legend with colored dots, labels, and percentage
+- **Demonstrated parallel worktree execution** — this pipeline ran simultaneously alongside Pipeline 006 in a separate `git worktree` directory
+
+#### Human gate
+All gates passed. PR merged after Pipeline 006 (sequential merge, lowest NNN first).
+
+---
+
+### Pipeline 006 — App Icon + Splash Screens
+
+**Date:** 2026-03-28
+**Branch:** `pipeline/006-app-logo` (worktree) → PR #6
+**Stages:** ARCHITECT → BUILDER → REVIEWER → QA-VERIFY (5/5)
+**Parallel with:** Pipeline 005 via git worktree
+**Artifacts:** `tasks/015-app-logo.md`, adaptive icon XMLs, `ic_launcher_background.xml`
+
+#### What was done
+
+- Created `frontend/resources/` with `icon.png` (1024×1024) and `splash.png` (2732×2732)
+- Generated all icon and splash variants via `@capacitor/assets generate`
+- Fixed Android adaptive icon `@mipmap/ic_launcher_background` resource-not-found error — changed both adaptive icon XMLs to use `@color/ic_launcher_background` (existing color resource)
+- Updated `ic_launcher_background.xml` color: `#FFFFFF` → `#0a0a0f` (matching Bloomberg dark theme)
+
+#### Human gate
+All gates passed. PR merged before Pipeline 005 merge (both sequential).
+
+---
+
+### Pipeline 007 — Pre-Submission Polish
+
+**Date:** 2026-03-29
+**Branch:** `pipeline/007-donut-chart-polish` + `pipeline/008-pre-submission-polish` → PRs #7 + #8
+**Stages:** BUILDER → QA-VERIFY (3/3 iterations + docs)
+
+#### What was done
+
+- **Bloomberg-style ring**: viewBox 200×200 → 320×320, r=128/innerR=118 (10px stroke, ~8% ratio), GAP=0.026 rad segment spacing
+- **Responsive chart**: `min(85vw, 320px)` CSS width
+- **Premium centre text**: 3-tier layout — muted "Portfolio" label (11px), portfolio value (28px weight 600, system font), daily change subtitle (`+0.68% today` in green/red with `[attr.fill]` binding)
+- **Documentation audit**: README features, pipeline agent count (7→8), evidence directories corrected, parallel worktrees promoted from "Future" to "Demonstrated", pipeline run log expanded from 1 row to 7 rows
+
+#### Human gate
+All gates passed. PRs #7 and #8 merged.
 
 ---
 
@@ -212,16 +370,20 @@ Pending — engineer to review and approve before final commit.
 
 | Metric | Value |
 |--------|-------|
-| Total pipeline runs | 9 |
-| BUILDER runs | 5 |
-| ARCHITECT runs | 2 |
-| QA runs | 1 |
-| REVIEWER runs | 0 (manual review at each stage) |
-| SCOUT runs | 0 (greenfield — no prior code to audit) |
-| Issues caught during build | 11 |
-| Issues caught during test | 3 |
-| Final test count | 27 passing, 0 failing |
-| Human review gates passed | 8 |
+| Total pipeline runs (all) | 9 initial build + 7 formal = 16 |
+| Formal pipeline runs (post-greenfield) | 7 (Pipeline 001–007) |
+| Merged PRs | 8 (#1–#8) |
+| SCOUT runs | 1 formal audit (Pipeline 001) + 1 reaudit (SCOUT-002) |
+| ARCHITECT runs | 7 (one per formal pipeline) |
+| BUILDER runs | 5 initial build + 7 formal = 12 |
+| REVIEWER runs | 7 formal; 1 FAIL→retry (Pipeline 001, W3 grep false positive) |
+| QA-VERIFY runs | 7 formal |
+| Issues caught during initial build | 11 |
+| Issues caught during test | 3 (initial) + 6 audit findings (W1–W5, I1) |
+| Key incident | Task 013 frontend-backend disconnect (Scenario 7 in pipeline-failure-handling.md) |
+| Final test count | 42 passing, 0 failing (30 frontend Vitest + 12 backend Jest) |
+| Human review gates passed | 8 initial + 7 formal pipelines = 15+ |
+| Parallel worktree executions | 1 (Pipelines 005 + 006 simultaneously) |
 
 ---
 
