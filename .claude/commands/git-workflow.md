@@ -48,18 +48,22 @@ WIP                              # never commit WIP to main
 
 ## Branch Strategy
 
-This project uses **trunk-based development** given the team size (solo + AI pair):
+This project uses **pipeline branches** for all feature work:
 
 ```
-main          — always deployable, always building clean
-feat/<name>   — short-lived feature branches (optional for larger changes)
-fix/<name>    — bug fix branches
+pipeline/NNN-description  — one branch per pipeline run
+main                      — always deployable, merged via PR only
 ```
 
-For the assessment context, committing directly to `main` after each passing phase is correct. In a team context:
-- Branch off `main` for each phase/feature
-- Open a PR, apply `/code-review` checklist, merge when green
-- Delete the branch after merge
+Branch naming must match task file number:
+- `tasks/012-bloomberg-ui.md` → `pipeline/012-bloomberg-ui`
+- `tasks/013-claude-api.md` → `pipeline/013-claude-api`
+
+Never commit pipeline work directly to main.
+Every pipeline branch must be merged via PR after QA-VERIFY passes.
+
+In future: ORCHESTRATOR agent creates branches automatically.
+See `design-docs/future-agents.md` — Planned: ORCHESTRATOR Agent.
 
 ## Pre-Commit Gate
 

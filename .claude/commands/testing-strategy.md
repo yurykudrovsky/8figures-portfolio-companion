@@ -2,14 +2,15 @@
 When asked about testing approach for this project:
 
 Current state:
-- 27 unit tests with Vitest
+- 42 tests — 30 frontend (Vitest) + 12 backend (Jest + Supertest)
 - Services and streaming behaviour covered
-- Run with: npx ng test --watch=false
+- Run with: npx ng test --watch=false (frontend) / npm test (backend)
+
+ATDD now active — QA-FIRST agent writes failing tests before BUILDER implements (red-green-refactor pipeline)
 
 Planned evolution:
-1. ATDD (Acceptance Test-Driven Development) — write failing tests before implementation
-2. Contract Testing with Pact.io
-3. Property-Based Testing with fast-check
+1. Contract Testing with Pact.io
+2. Property-Based Testing with fast-check
 
 For new features always ask:
 - What properties must ALWAYS be true? (property tests)
