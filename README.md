@@ -57,7 +57,7 @@ All pipeline runs produce artifacts committed to the repo:
 
 ### Pipeline Configuration
 - `CLAUDE.md` — project standards encoded before first line of code
-- `.claude/agents/` — 8 specialist agent context files (includes INTAKE)
+- `.claude/agents/` — 7 specialist agent context files
 - `.claude/commands/` — 6 reusable skills (see below)
 - `tasks/` — structured task specs (reproducible, version controlled)
 - `inbox/` — drop requirement docs here; INTAKE agent converts them to task files
