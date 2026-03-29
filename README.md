@@ -9,6 +9,7 @@ A mobile-first AI portfolio companion built with Angular 21, Ionic 8, and Capaci
 <!-- AUTO-DOCS:FEATURES:START -->
 - **Portfolio Dashboard** — holdings list, total value, daily P&L with green/red formatting, pull-to-refresh
 - **Bloomberg Dark Theme** — premium `#0a0a0f` terminal UI with teal accent (`#00d4aa`), gain/loss pill badges, left accent bars, staggered card fade-in, and count-up hero value animation
+- **Portfolio Allocation Donut Chart** — Bloomberg-style SVG ring chart (responsive `min(85vw, 320px)`), 10px thin stroke with segment gaps, asset-type breakdown legend, live centre value with daily change subtitle
 - **AI Chat Interface** — real Anthropic Claude API (`claude-haiku-4-5-20251001`) with character-by-character SSE streaming, full portfolio context injected into system prompt, graceful mock fallback when API key is absent
 - **Loading / Error / Empty states** — every async operation is fully handled
 - **Cross-platform** — iOS Simulator (iPhone 17 Pro) and Android Emulator (API 36)
@@ -23,14 +24,15 @@ powered by Claude Code. The pipeline is as much a deliverable
 as the application itself.
 
 ### Pipeline Architecture
-7 specialist agents with human gates at every handoff:
+8 specialist agents with human gates at every handoff:
 
 | Agent | Role | Output |
 |---|---|---|
+| INTAKE | Parses requirements docs from `inbox/` → generates task files | tasks/ |
 | SCOUT | Read-only auditor — finds issues, never fixes | audit-reports/ |
 | ARCHITECT | Design authority — designs fixes, never implements | design-docs/ |
-| SPECS | Translates design into user-facing acceptance criteria | specs/ |
-| QA-FIRST | Writes failing test stubs before BUILDER touches code (ATDD) | qa-first-reports/ |
+| SPECS | Translates design into user-facing acceptance criteria | design-docs/ |
+| QA-FIRST | Writes failing test stubs before BUILDER touches code (ATDD) | spec files |
 | BUILDER | Implementation only — follows design exactly | source code |
 | REVIEWER | Quality gate — verifies against CLAUDE.md rules | review-reports/ |
 | QA-VERIFY | Test authority — confirms all ACs pass, writes final report | qa-reports/ |
@@ -48,16 +50,17 @@ Every feature follows this workflow:
 All pipeline runs produce artifacts committed to the repo:
 - `audit-reports/` — SCOUT findings with CONFIRMED/FIXED/NEW status
 - `design-docs/` — ARCHITECT designs before any code is written
-- `specs/` — SPECS acceptance criteria per feature
-- `qa-first-reports/` — ATDD failing stubs before implementation
 - `review-reports/` — REVIEWER verdicts with exact grep evidence
 - `qa-reports/` — QA-VERIFY results with test counts
+- `tasks/` — structured task specs (reproducible, version controlled)
+- **7 merged PRs** — every feature delivered through the pipeline with full audit trail
 
 ### Pipeline Configuration
 - `CLAUDE.md` — project standards encoded before first line of code
-- `.claude/agents/` — 7 specialist agent context files
+- `.claude/agents/` — 8 specialist agent context files (includes INTAKE)
 - `.claude/commands/` — 6 reusable skills (see below)
 - `tasks/` — structured task specs (reproducible, version controlled)
+- `inbox/` — drop requirement docs here; INTAKE agent converts them to task files
 - `scripts/run-agent.sh` — agent launcher with branch safety check
 
 ### Skills (slash commands)
@@ -71,11 +74,16 @@ All pipeline runs produce artifacts committed to the repo:
 | `/feature-checklist` | Pre-merge feature completeness checklist |
 | `/testing-strategy` | ATDD strategy guide for new features |
 
+### Parallel Execution — Demonstrated
+Two independent pipeline branches ran simultaneously via git worktrees:
+- `pipeline/005-portfolio-chart` + `pipeline/006-app-logo` ran in parallel
+- Each worktree had its own isolated build, tests, and agent context
+- Merged sequentially after both QA gates passed (PRs #5 and #6)
+
 ### Future Evolution
 - Semi-automated PRs via gh CLI (1 day)
 - Jira/GitHub webhook integration (1 sprint)
 - ORCHESTRATOR agent for autonomous pipeline execution (1 sprint)
-- Parallel worktree execution for concurrent pipelines (1 sprint)
 
 See [ARCHITECTURE.md](./ARCHITECTURE.md) "Pipeline Evolution" and
 [design-docs/future-agents.md](./design-docs/future-agents.md) for full roadmap.
