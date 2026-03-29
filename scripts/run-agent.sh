@@ -22,7 +22,7 @@ fi
 
 if [[ -z "$AGENT" ]]; then
   echo "ERROR: Agent name required."
-  echo "Agents: scout | architect | builder | reviewer | qa"
+  echo "Agents: intake | scout | architect | specs | qa-first | builder | reviewer | qa-verify"
   exit 1
 fi
 
